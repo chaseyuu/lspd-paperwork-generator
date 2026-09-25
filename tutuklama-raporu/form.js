@@ -5,7 +5,7 @@ window.REPORT_FORM = {
   "titleTemplate": "TR — {TARIH_RAPOR} - {AD_SOYADI_2911L1G}",
   "sections": [
     {
-      "title": "Personel Bilgileri",
+      "title": "Personel Bilgisi – 1",
       "cols": 3,
       "fields": [
         {
@@ -66,6 +66,62 @@ window.REPORT_FORM = {
           "label": "Tarih",
           "type": "date",
           "today": true
+        }
+      ]
+    },
+    {
+      "title": "Personel Bilgisi – 2",
+      "cols": 4,
+      "fields": [
+        {
+          "key": "PERSONEL_BILGISI_151KSJP1",
+          "label": "Adı Soyadı",
+          "type": "text",
+          "placeholder": "JOHN DOE",
+          "default": "—",
+          "hint": "Büyük harflerle doldurun.",
+          "upper": "en"
+        },
+        {
+          "key": "SERI_NO_159LJQF1",
+          "label": "Seri No.",
+          "type": "text",
+          "placeholder": "00000",
+          "default": "—"
+        },
+        {
+          "key": "DIVISION_21NN6U",
+          "label": "Division",
+          "type": "select",
+          "placeholder": "Seçim Yapın",
+          "values": [
+            { "label": "MISN", "value": "MISN" },
+            { "label": "MISN B", "value": "MISN B" },
+            { "label": "CTD", "value": "CTD" },
+            { "label": "METRO", "value": "METRO" },
+            { "label": "ASD", "value": "ASD" },
+            { "label": "VES", "value": "VES" }
+          ]
+        },
+        {
+          "key": "GREVLENDIRME_36Y25T",
+          "label": "Görevlendirme",
+          "type": "select",
+          "search": true,
+          "values": [
+            { "label": "Adam", "value": "A" },
+            { "label": "Desk Officer", "value": "DESK" },
+            { "label": "Detective Unit", "value": "W" },
+            { "label": "Extra Patrol Unit", "value": "X" },
+            { "label": "Field Supervisor", "value": "FS" },
+            { "label": "Gang Enforcement Detail", "value": "GIT, GED" },
+            { "label": "Mary", "value": "M" },
+            { "label": "Metropolitan Division Unit", "value": "R" },
+            { "label": "Other Units (Lincoln dahil)", "value": "O" },
+            { "label": "Senior Lead Officer", "value": "SL" },
+            { "label": "Tom", "value": "T" },
+            { "label": "Tom Lincoln", "value": "TL" }
+          ]
         }
       ]
     },
@@ -155,62 +211,6 @@ window.REPORT_FORM = {
           "placeholder": "401, 410",
           "locked": true,
           "lockedTitle": "Seçilen kanunlara göre otomatik doldurulur."
-        }
-      ]
-    },
-    {
-      "title": "Tutuklamayı Yapan İkinci Personel Bilgisi",
-      "cols": 4,
-      "fields": [
-        {
-          "key": "PERSONEL_BILGISI_151KSJP1",
-          "label": "Adı Soyadı",
-          "type": "text",
-          "placeholder": "JOHN DOE",
-          "default": "—",
-          "hint": "Büyük harflerle doldurun.",
-          "upper": "en"
-        },
-        {
-          "key": "SERI_NO_159LJQF1",
-          "label": "Seri No.",
-          "type": "text",
-          "placeholder": "00000",
-          "default": "—"
-        },
-        {
-          "key": "DIVISION_21NN6U",
-          "label": "Division",
-          "type": "select",
-          "placeholder": "Seçim Yapın",
-          "values": [
-            { "label": "MISN", "value": "MISN" },
-            { "label": "MISN B", "value": "MISN B" },
-            { "label": "CTD", "value": "CTD" },
-            { "label": "METRO", "value": "METRO" },
-            { "label": "ASD", "value": "ASD" },
-            { "label": "VES", "value": "VES" }
-          ]
-        },
-        {
-          "key": "GREVLENDIRME_36Y25T",
-          "label": "Görevlendirme",
-          "type": "select",
-          "search": true,
-          "values": [
-            { "label": "Adam", "value": "A" },
-            { "label": "Desk Officer", "value": "DESK" },
-            { "label": "Detective Unit", "value": "W" },
-            { "label": "Extra Patrol Unit", "value": "X" },
-            { "label": "Field Supervisor", "value": "FS" },
-            { "label": "Gang Enforcement Detail", "value": "GIT, GED" },
-            { "label": "Mary", "value": "M" },
-            { "label": "Metropolitan Division Unit", "value": "R" },
-            { "label": "Other Units (Lincoln dahil)", "value": "O" },
-            { "label": "Senior Lead Officer", "value": "SL" },
-            { "label": "Tom", "value": "T" },
-            { "label": "Tom Lincoln", "value": "TL" }
-          ]
         }
       ]
     },
