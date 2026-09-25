@@ -3,6 +3,7 @@ window.REPORT_FORM = {
   "emptyValue": "—",
   "title": "Araç El Koyma Formu",
   "titleTemplate": "{HLAL_TARIH_538EMNO} - {PLAKA_2667IPU} - {MODEL_2555NYG}",
+  "required": true,
   "sections": [
     {
       "title": "İhlal Türü",
