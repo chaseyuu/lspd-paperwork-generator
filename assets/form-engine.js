@@ -7,8 +7,13 @@
  *              charges (penal code picker that writes article numbers into f.target).
  * Field options: key, label, placeholder, hint, tooltip, values [{label, value}], default,
  *                upper ('en' | 'tr'), span ('all'), prefill ('name' | 'badge' | 'division'), search (true),
- *                ids / ranges / target / typeTargets / typeOn / typeOff (charges only), locked (select, text),
- *                today (date: starts with the computer's date).
+ *                ids / ranges / types / target / typeTargets / typeOn / typeOff / classify (charges only),
+ *                locked (select, text), today (date: starts with the computer's date).
+ * Charges-only options: ids/ranges narrow the list by article number, types narrows it by penal
+ *                        code type (e.g. ["I", "M"]); with neither ids nor ranges set, all articles
+ *                        matching types are offered. classify(option) maps a chosen article to a key
+ *                        into typeTargets, overriding the default (the article's own type letter) —
+ *                        used to split "I" into separate boxes by article range.
  * Template placeholders: {KEY}.
  */
 (function () {
@@ -136,10 +141,14 @@
    * Fills f.target with the chosen article numbers only: "401, 410". */
   function chargeOptions(f) {
     var code = window.PENAL_CODE || [];
+    var hasIdFilter = (f.ids && f.ids.length) || (f.ranges && f.ranges.length);
     return code.filter(function (c) {
       var n = parseInt(c.id, 10);
-      return (f.ids || []).indexOf(c.id.replace(/[^0-9]/g, '')) >= 0 ||
+      var idMatch = !hasIdFilter ||
+        (f.ids || []).indexOf(c.id.replace(/[^0-9]/g, '')) >= 0 ||
         (f.ranges || []).some(function (r) { return n >= r[0] && n <= r[1]; });
+      var typeMatch = !f.types || f.types.indexOf(c.type) >= 0;
+      return idMatch && typeMatch;
     }).map(function (c) {
       return {
         value: c.id,
@@ -165,11 +174,16 @@
       });
       var target = controls[f.target];
       if (target) { target.set(seen.join(', ')); if (target.input) delete target.input.dataset.autofill; }
-      // Tick the offence type boxes (Infraction / Misdemeanor / Felony) from the chosen charges.
+      // Tick the offence type boxes (e.g. Infraction / Misdemeanor / Felony) from the chosen charges.
+      // f.classify(option) may override the plain option.type -> key mapping (e.g. to split
+      // Infraction into Trafik / Trafik Dışı by article number for the İhlal Raporu).
       var types = {};
       rows.forEach(function (r) {
         var id = r.select.get();
-        options.forEach(function (o) { if (o.value === id) types[o.type] = true; });
+        var opt = options.filter(function (o) { return o.value === id; })[0];
+        if (!opt) return;
+        var key = f.classify ? f.classify(opt) : opt.type;
+        if (key) types[key] = true;
       });
       Object.keys(f.typeTargets || {}).forEach(function (type) {
         var t = controls[f.typeTargets[type]];
