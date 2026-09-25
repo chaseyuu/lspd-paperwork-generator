@@ -17,12 +17,8 @@ input.input[type="time"]::-webkit-calendar-picker-indicator { cursor: pointer; o
 
 /* Select list with a search box */
 .select-list ul { margin: 0; padding: 0; list-style: none; }
-.select-search {
-  position: sticky; top: -4px; z-index: 1; display: block; width: 100%; height: 36px; margin: -4px 0 4px;
-  padding: 0 10px; background: inherit; color: var(--foreground);
-  border: 0; border-bottom: 1px solid var(--border); border-radius: 8px 8px 0 0;
-  font: inherit; font-size: .875rem; outline: none;
-}
+.select-list li[hidden], .select-empty[hidden] { display: none; }
+.select-search { color: var(--foreground); font: inherit; font-size: .875rem; outline: none; }
 .select-search::placeholder { color: var(--muted-foreground); }
 .select-empty { margin: 0; padding: 8px 10px; font-size: .875rem; color: var(--muted-foreground); }
 
@@ -47,11 +43,34 @@ html[data-theme="light"] .help .tip { background: #fff; box-shadow: 0 6px 16px r
 /* Result view */
 .result-title-row { display: flex; gap: 12px; margin-top: 16px; }
 .result-title-row .input { flex: 1; }
-.preview {
-  margin-top: 16px; padding: 16px; overflow-x: auto;
-  background: var(--field); border: 1px solid var(--border); border-radius: var(--radius);
+
+/* Search box inside select lists */
+.select-search-wrap {
+  position: sticky; top: -4px; z-index: 1; display: flex; align-items: center; gap: 8px;
+  margin: -4px -4px 4px; padding: 0 12px; background: inherit;
+  border-bottom: 1px solid var(--border); border-radius: 8px 8px 0 0;
 }
-.preview-inner { width: max-content; min-width: 100%; }
+.select-search-wrap svg { width: 16px; height: 16px; flex: none; color: var(--muted-foreground); }
+.select-search-wrap .select-search { position: static; margin: 0; padding: 0; border: 0; height: 40px; flex: 1; background: transparent; }
+
+/* Charge picker (same look as the arrest calculator) */
+.charge-rows { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+.charge-row { display: flex; gap: 10px; }
+.charge-row .select { flex: 1; min-width: 0; }
+.icon-btn { width: 40px; padding: 0; justify-content: center; flex: none; color: var(--muted-foreground); }
+.icon-btn:hover { color: hsl(0 75% 62%); border-color: hsl(0 60% 45%); }
+.opt { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.opt-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.select-trigger .opt { flex: 1; }
+.code-badge {
+  flex: none; min-width: 34px; padding: 2px 6px; border-radius: 4px;
+  font-size: .75rem; font-weight: 600; line-height: 1.4; text-align: center; color: #fff;
+  background: #6b7280;
+}
+.code-badge.type-F { background: #ef4444; }
+.code-badge.type-M { background: #eab308; }
+.code-badge.type-I { background: #22c55e; }
+.select-list { max-height: 320px; }
 
 @media (max-width: 900px) {
   .field-grid.cols-3 { grid-template-columns: 1fr; }

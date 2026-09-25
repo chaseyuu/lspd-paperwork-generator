@@ -16,9 +16,11 @@ yazı, açıklama, ipucu, seçenekler) ve raporun HTML çıktı şablonunu tanı
 ifadeleri formdaki değerlerle değiştirilir. Formu ekrana çizen ve raporu oluşturan ortak kod
 `assets/form-engine.js`, ek görünüm kuralları `assets/form.css` dosyasındadır.
 
-- **Oluştur** düğmesi raporu hazırlar; rapor başlığı ve raporun önizlemesi gösterilir.
+- **Oluştur** düğmesi raporu hazırlar ve rapor başlığını gösterir.
 - **Raporu Kopyala** raporun HTML kodunu, **Başlığı Kopyala** rapor başlığını panoya kopyalar.
-- **Görsel Olarak İndir** raporu PNG olarak indirir.
+- **Suçlama** alanı Tutuklama Hesaplayıcı'daki suçlama menüsünün aynısıdır (`assets/penal-code.js`).
+  Araç El Koyma Formu'nda 115 ve 400–500 arasındaki maddeler listelenir; **Suçlama Ekle** ile birden fazla
+  madde seçilebilir. Seçilen maddelerin yalnızca numaraları Ceza Kanunu alanına `401, 410` biçiminde yazılır.
 - **Formu Düzenle** girilen bilgiler kaybolmadan forma geri döner.
 - Personel Bilgisi, Seri No. ve Division alanları sağ üstte seçili karakterin bilgileriyle otomatik doldurulur.
   Karakter değiştirildiğinde bu alanlar da güncellenir; elle değiştirilen bir alana dokunulmaz.

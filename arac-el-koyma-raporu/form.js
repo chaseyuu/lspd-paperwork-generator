@@ -237,6 +237,22 @@ window.REPORT_FORM = {
       "cols": 2,
       "fields": [
         {
+          "key": "SUCLAMA",
+          "label": "Suçlama",
+          "type": "charges",
+          "span": "all",
+          "ids": [
+            "115"
+          ],
+          "ranges": [
+            [
+              400,
+              500
+            ]
+          ],
+          "target": "CEZA_KANUNU_493TFFU"
+        },
+        {
           "key": "HLAL_KONUMU_4493B3H",
           "label": "İhlal Konumu",
           "type": "text",

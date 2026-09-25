@@ -3,15 +3,20 @@
  * and this script builds the form, fills officer fields from the active character, and turns the
  * answers into the report (copy as HTML, copy title, download as image).
  *
- * Field types: text, select, date (dd/MM/yyyy), time (HH:mm), textarea.
+ * Field types: text, select, date (dd/MM/yyyy), time (HH:mm), textarea,
+ *              charges (penal code picker that writes article numbers into f.target).
  * Field options: key, label, placeholder, hint, tooltip, values [{label, value}], default,
- *                upper ('en' | 'tr'), span ('all'), prefill ('name' | 'badge' | 'division').
+ *                upper ('en' | 'tr'), span ('all'), prefill ('name' | 'badge' | 'division'), search (true),
+ *                ids / ranges / target (charges only).
  * Template placeholders: {KEY}.
  */
 (function () {
   var def = window.REPORT_FORM;
   var CHECK = '<svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
   var CHEVRON = '<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+  var SEARCH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>';
+  var TRASH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
+  var PLUS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>';
   var HELP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>';
 
   function esc(s) {
@@ -39,17 +44,17 @@
     var sel = -1;
     var trigger = el('button', { type: 'button', class: 'select-trigger', 'aria-haspopup': 'listbox', 'aria-expanded': 'false', 'aria-labelledby': labelId });
     var panel = el('div', { class: 'select-list' });
-    var search = f.search ? el('input', { class: 'select-search', type: 'text', placeholder: 'Aramak için yazın', autocomplete: 'off', 'aria-label': 'Ara' }) : null;
+    var search = f.search ? el('input', { class: 'select-search', type: 'text', placeholder: f.searchPlaceholder || 'Aramak için yazın', autocomplete: 'off', 'aria-label': 'Ara' }) : null;
     var list = el('ul', { role: 'listbox', 'aria-labelledby': labelId });
-    var empty = el('p', { class: 'select-empty', hidden: '' }, 'Sonuç bulunamadı.');
+    var empty = el('p', { class: 'select-empty', hidden: '' }, esc(f.emptyText || 'Sonuç bulunamadı.'));
     f.values.forEach(function (opt, i) {
-      var li = el('li', { role: 'option', 'data-value': opt.value, 'data-index': i }, CHECK + '<span></span>');
-      li.lastChild.textContent = opt.label;
+      var li = el('li', { role: 'option', 'data-value': opt.value, 'data-index': i, 'data-search': opt.label + ' ' + opt.value }, CHECK + '<span class="opt"></span>');
+      if (opt.html) li.lastChild.innerHTML = opt.html; else li.lastChild.textContent = opt.label;
       li.addEventListener('mousedown', function (e) { e.preventDefault(); });
-      li.addEventListener('click', function () { sel = i; render(); close(); trigger.focus(); });
+      li.addEventListener('click', function () { sel = i; render(); changed(); close(); trigger.focus(); });
       list.appendChild(li);
     });
-    if (search) panel.appendChild(search);
+    if (search) panel.appendChild(el('div', { class: 'select-search-wrap' }, SEARCH)).appendChild(search);
     panel.appendChild(list); panel.appendChild(empty);
     root.appendChild(trigger); root.appendChild(panel);
 
@@ -58,13 +63,15 @@
       return -1;
     }
     function render() {
-      var text = sel >= 0 ? f.values[sel].label : '';
-      trigger.innerHTML = (text ? '<span></span>' : '<span class="placeholder"></span>') + CHEVRON;
-      trigger.firstChild.textContent = text || f.placeholder || '';
+      var opt = sel >= 0 ? f.values[sel] : null;
+      trigger.innerHTML = (opt ? '<span class="opt"></span>' : '<span class="placeholder"></span>') + CHEVRON;
+      if (opt && opt.html) trigger.firstChild.innerHTML = opt.html;
+      else trigger.firstChild.textContent = opt ? opt.label : (f.placeholder || '');
       list.querySelectorAll('li').forEach(function (li) { li.setAttribute('aria-selected', String(Number(li.getAttribute('data-index')) === sel)); });
     }
     function set(v) { sel = indexOf(v); render(); }
-    function pick(li) { sel = Number(li.getAttribute('data-index')); render(); }
+    function pick(li) { sel = Number(li.getAttribute('data-index')); render(); changed(); }
+    function changed() { if (f.onChange) f.onChange(sel >= 0 ? f.values[sel].value : ''); }
     function visible() { return Array.prototype.filter.call(list.querySelectorAll('li'), function (li) { return !li.hidden; }); }
     var active = -1;
     function highlight(i) {
@@ -78,7 +85,7 @@
     function filter() {
       var q = norm(search.value.trim());
       list.querySelectorAll('li').forEach(function (li) {
-        li.hidden = !!q && norm(li.textContent + ' ' + li.getAttribute('data-value')).indexOf(q) < 0;
+        li.hidden = !!q && norm(li.getAttribute('data-search')).indexOf(q) < 0;
       });
       empty.hidden = visible().length > 0;
       highlight(0);
@@ -118,6 +125,63 @@
     return { node: root, get: function () { return sel >= 0 ? f.values[sel].value : ''; }, set: set, focusEl: trigger };
   }
 
+  /* ---------- Charge picker (same menu as the arrest calculator) ----------
+   * Fills f.target with the chosen article numbers only: "401, 410". */
+  function chargeOptions(f) {
+    var code = window.PENAL_CODE || [];
+    return code.filter(function (c) {
+      var n = parseInt(c.id, 10);
+      return (f.ids || []).indexOf(c.id.replace(/[^0-9]/g, '')) >= 0 ||
+        (f.ranges || []).some(function (r) { return n >= r[0] && n <= r[1]; });
+    }).map(function (c) {
+      return {
+        value: c.id,
+        label: c.id + ' ' + c.charge,
+        html: '<span class="code-badge type-' + esc(c.type) + '">' + esc(c.id) + '</span><span class="opt-text">' + esc(c.charge) + '</span>',
+      };
+    });
+  }
+  function buildCharges(f, labelId) {
+    var options = chargeOptions(f);
+    var root = el('div', { class: 'charges' });
+    var rowsEl = el('div', { class: 'charge-rows' });
+    var add = el('button', { type: 'button', class: 'btn' }, PLUS + 'Suçlama Ekle');
+    root.appendChild(rowsEl); root.appendChild(add);
+    var rows = [];
+
+    function sync() {
+      var seen = [];
+      rows.forEach(function (r) {
+        var n = r.select.get().replace(/[^0-9]/g, '');
+        if (n && seen.indexOf(n) < 0) seen.push(n);
+      });
+      var target = controls[f.target];
+      if (target) { target.set(seen.join(', ')); if (target.input) delete target.input.dataset.autofill; }
+    }
+    function addRow(focus) {
+      var row = el('div', { class: 'charge-row' });
+      var select = buildSelect({
+        values: options, search: true, placeholder: 'Suçlama Seçin',
+        searchPlaceholder: 'Ad veya madde numarasıyla ara...', emptyText: 'Suçlama bulunamadı.',
+        onChange: sync,
+      }, labelId);
+      var remove = el('button', { type: 'button', class: 'btn icon-btn', 'aria-label': 'Suçlamayı Kaldır', title: 'Suçlamayı Kaldır' }, TRASH);
+      row.appendChild(select.node); row.appendChild(remove);
+      rowsEl.appendChild(row);
+      var entry = { node: row, select: select };
+      rows.push(entry);
+      remove.addEventListener('click', function () {
+        if (rows.length === 1) { select.set(''); }
+        else { rows.splice(rows.indexOf(entry), 1); row.remove(); }
+        sync();
+      });
+      if (focus) select.focusEl.click();
+    }
+    add.addEventListener('click', function () { addRow(true); });
+    addRow(false);
+    return { node: root, get: function () { return ''; }, set: function () {}, focusEl: rows[0].select.focusEl };
+  }
+
   /* ---------- Build the form ---------- */
   def.sections.forEach(function (section, si) {
     var panel = el('section', { class: 'panel form-panel', 'aria-labelledby': 'sec-' + si });
@@ -127,12 +191,15 @@
       var id = 'f-' + f.key, labelId = id + '-label';
       var wrap = el('div', { class: 'field' + (f.span === 'all' ? ' span-all' : '') });
       var labelRow = el('div', { class: 'label-row' });
-      labelRow.appendChild(el('label', { id: labelId, for: f.type === 'select' ? null : id }, esc(f.label)));
+      labelRow.appendChild(el('label', { id: labelId, for: f.type === 'select' || f.type === 'charges' ? null : id }, esc(f.label)));
       if (f.tooltip) labelRow.appendChild(el('span', { class: 'help', tabindex: '0', 'aria-label': f.tooltip }, HELP + '<span class="tip" role="tooltip">' + esc(f.tooltip) + '</span>'));
       wrap.appendChild(labelRow);
 
       var ctrl;
-      if (f.type === 'select') {
+      if (f.type === 'charges') {
+        ctrl = buildCharges(f, labelId);
+        wrap.appendChild(ctrl.node);
+      } else if (f.type === 'select') {
         ctrl = buildSelect(f, labelId);
         wrap.appendChild(ctrl.node);
       } else {
@@ -209,7 +276,6 @@
   var formView = document.getElementById('form-view');
   var resultView = document.getElementById('result-view');
   var titleInput = document.getElementById('result-title');
-  var preview = document.getElementById('preview');
   var statusEl = document.getElementById('result-status');
   var output = '', statusTimer;
 
@@ -230,7 +296,6 @@
     var vals = values();
     output = fill(def.template, vals, true);
     titleInput.value = fill(def.titleTemplate || '', vals, false);
-    preview.innerHTML = '<div class="preview-inner">' + output + '</div>';
     formView.hidden = true;
     resultView.hidden = false;
     window.scrollTo(0, 0);
@@ -247,30 +312,4 @@
     copy(output).then(function () { showStatus('Rapor kopyalandı.'); });
   });
 
-  function loadHtml2canvas() {
-    if (window.html2canvas) return Promise.resolve(window.html2canvas);
-    return new Promise(function (resolve, reject) {
-      var s = el('script', { src: 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js' });
-      s.onload = function () { resolve(window.html2canvas); };
-      s.onerror = reject;
-      document.head.appendChild(s);
-    });
-  }
-  document.getElementById('download-btn').addEventListener('click', function () {
-    var target = preview.querySelector('.preview-inner > *') || preview;
-    loadHtml2canvas().then(function (h2c) {
-      // Page scaling on wide screens must not end up in the image.
-      var zoom = document.documentElement.style.zoom;
-      document.documentElement.style.zoom = '';
-      return h2c(target, { backgroundColor: '#ffffff', scale: 2, useCORS: true }).then(function (canvas) {
-        document.documentElement.style.zoom = zoom;
-        var a = el('a');
-        var name = (titleInput.value || def.title).replace(/[\\/:*?"<>|]+/g, '-').trim();
-        a.download = name + '.png';
-        a.href = canvas.toDataURL('image/png');
-        a.click();
-        showStatus('Görsel indiriliyor.');
-      }, function (err) { document.documentElement.style.zoom = zoom; throw err; });
-    }).catch(function () { showStatus('Görsel oluşturulamadı.'); });
-  });
 })();
