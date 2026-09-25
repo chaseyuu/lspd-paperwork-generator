@@ -9,6 +9,8 @@
  *                upper ('en' | 'tr'), span ('all'), prefill ('name' | 'badge' | 'division'), search (true),
  *                ids / ranges / types / target / typeTargets / typeOn / typeOff / classify (charges only),
  *                locked (select, text), today (date: starts with the computer's date).
+ * Top-level def.outputFormat: 'bbcode' outputs the template with raw values (no HTML-escaping, no
+ *                              newline-to-<br> conversion); anything else (default) outputs HTML.
  * Charges-only options: ids/ranges narrow the list by article number, types narrows it by penal
  *                        code type (e.g. ["I", "M"]); with neither ids nor ranges set, all articles
  *                        matching types are offered. filter(codeEntry) can drop individual articles
@@ -440,7 +442,7 @@
     if (def.required && !validate()) return;
     if (!checkRanges()) return;
     var vals = values();
-    output = fill(def.template, vals, true);
+    output = fill(def.template, vals, def.outputFormat !== 'bbcode');
     if (titleInput) titleInput.value = fill(def.titleTemplate || '', vals, false);
     var code = document.getElementById('result-code');
     if (code) code.value = output;

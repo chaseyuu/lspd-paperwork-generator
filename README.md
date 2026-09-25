@@ -8,16 +8,19 @@ LSPD Tools ailesinin rapor oluşturma aracı. Yayındaki adres: https://chaseyuu
 |---|---|---|
 | Araç El Koyma Raporu | `arac-el-koyma-raporu/` | Hazır |
 | İhlal Raporu | `ihlal-raporu/` | Hazır |
+| Field Interview Kartı | `field-interview-karti/` | Hazır |
 
 ## Nasıl çalışır
 
 Her rapor klasöründe bir `form.js` dosyası bulunur. Bu dosya formun bölümlerini, alanlarını (etiket, örnek
-yazı, açıklama, ipucu, seçenekler) ve raporun HTML çıktı şablonunu tanımlar. Şablondaki `{ALAN_ANAHTARI}`
+yazı, açıklama, ipucu, seçenekler) ve raporun çıktı şablonunu tanımlar. Şablondaki `{ALAN_ANAHTARI}`
 ifadeleri formdaki değerlerle değiştirilir. Formu ekrana çizen ve raporu oluşturan ortak kod
-`assets/form-engine.js`, ek görünüm kuralları `assets/form.css` dosyasındadır.
+`assets/form-engine.js`, ek görünüm kuralları `assets/form.css` dosyasındadır. Çıktı formatı varsayılan
+olarak HTML'dir; bir formun `form.js` dosyasında `"outputFormat": "bbcode"` ayarlanırsa (Field Interview
+Kartı'nda olduğu gibi) çıktı ham BBCode metni olarak üretilir.
 
-- **Oluştur** düğmesi raporu hazırlar; rapor başlığı ve raporun kaynak kodu (HTML) gösterilir.
-- **Raporu Kopyala** raporun HTML kodunu, **Başlığı Kopyala** rapor başlığını panoya kopyalar.
+- **Oluştur** düğmesi raporu hazırlar; rapor başlığı ve raporun kaynak kodu gösterilir.
+- **Raporu Kopyala** raporun kaynak kodunu (HTML veya BBCode), **Başlığı Kopyala** rapor başlığını panoya kopyalar.
 - **Kanunlar** alanı Tutuklama Hesaplayıcı'daki suçlama menüsünün aynısıdır (`assets/penal-code.js`).
   Araç El Koyma Formu'nda 115 ve 400–500 arasındaki maddeler listelenir; **İhlal Ekle** ile birden fazla
   madde seçilebilir. Seçilen maddelerin yalnızca numaraları Ceza Kanunu alanına `401, 410` biçiminde yazılır.
@@ -58,6 +61,11 @@ ifadeleri formdaki değerlerle değiştirilir. Formu ekrana çizen ve raporu olu
   başlar. İhlal Raporu'nun sonuç
   ekranında Araç El Koyma Formu'ndaki gibi bir rapor başlığı çıktısı yoktur; yalnızca raporun kaynak
   kodu gösterilir.
+- **Field Interview Kartı** çıktısı HTML değil **BBCode**'dur (forum yazılımına doğrudan yapıştırılabilir).
+  **Memur** (1.) ve onun **Seri No.**'su sağ üstte seçili karakterin bilgileriyle otomatik doldurulur
+  (diğer formlardaki Personel Bilgisi ile aynı mekanizma); ikinci **Memur** ve onun **Seri No.**'su elle
+  yazılır, otomatik doldurulmaz. Diğer tüm alanlar da (Cinsiyet ve Kişi Bilgisi hariç, bunlar seçmelidir)
+  elle doldurulur; boş bırakılırlarsa raporda `—` yazılır.
 
 ## Ortak tasarım
 
