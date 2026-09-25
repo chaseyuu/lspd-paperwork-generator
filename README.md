@@ -30,6 +30,12 @@ Kartı'nda olduğu gibi) çıktı ham BBCode metni olarak üretilir.
 - Personel Bilgisi, Seri No. ve Division alanları sağ üstte seçili karakterin bilgileriyle otomatik doldurulur.
   Karakter değiştirildiğinde bu alanlar da güncellenir; elle değiştirilen bir alana dokunulmaz.
 - "Büyük harflerle yazın." açıklaması olan alanlar yazılırken otomatik olarak büyük harfe çevrilir.
+- Elle yazılan metin alanları tarayıcının otomatik doldurmasını (Chrome'un kayıtlı adres/isim
+  verileri, şifre yöneticileri vb.) engelleyecek şekilde tasarlanmıştır: her alan, kullanıcı o alana
+  tıklayana kadar salt okunur (`readonly`) kalır; tarayıcılar salt okunur alanları otomatik
+  doldurmadığından, karakterin Adı Soyadı, Adres Bilgisi gibi alanlarına gerçek (OOC) bilgilerin
+  yanlışlıkla yazılması önlenir. Sağ üstteki karakterden otomatik doldurulan alanlar (Personel
+  Bilgisi/Memur, Seri No., Division) bu kısıtlamadan etkilenmez.
 - Genel Bilgiler'deki Tarih alanı bilgisayarın o günkü tarihiyle başlar.
 - Boş bırakılan alanlar raporda `—` olarak yazılır.
 - Her iki formda da **tüm alanlar zorunludur** (otomatik doldurulan/kilitli alanlar hariç). Boş bir
