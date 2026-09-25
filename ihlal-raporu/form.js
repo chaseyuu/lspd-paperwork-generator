@@ -21,9 +21,7 @@ window.REPORT_FORM = {
               "value": "☐"
             }
           ],
-          "default": "☐",
-          "locked": true,
-          "lockedTitle": "Seçilen kanunlara göre otomatik belirlenir."
+          "default": "☐"
         },
         {
           "key": "TRAFIK_DII_5W23J",
@@ -39,9 +37,7 @@ window.REPORT_FORM = {
               "value": "☐"
             }
           ],
-          "default": "☐",
-          "locked": true,
-          "lockedTitle": "Seçilen kanunlara göre otomatik belirlenir."
+          "default": "☐"
         },
         {
           "key": "MISDEMEANOR_13TFTD",
@@ -279,8 +275,6 @@ window.REPORT_FORM = {
           "types": ["I", "M"],
           "target": "CEZA_KANUNU_493TFFU",
           "typeTargets": {
-            "TRAFIK": "TRAFIK_97AM0",
-            "TRAFIK_DII": "TRAFIK_DII_5W23J",
             "MISDEMEANOR": "MISDEMEANOR_13TFTD"
           },
           "typeOn": "☒",
@@ -295,12 +289,9 @@ window.REPORT_FORM = {
             return allowed.indexOf(c.id) >= 0;
           },
           "classify": function (opt) {
-            if (opt.type === 'M') return 'MISDEMEANOR';
-            if (opt.type === 'I') {
-              var n = parseInt(opt.value, 10);
-              return (n >= 400 && n <= 444) ? 'TRAFIK' : 'TRAFIK_DII';
-            }
-            return null;
+            // Misdemeanor kutucuğu seçilen kanunlara göre otomatik işaretlenir. Trafik ve
+            // Trafik Dışı kutucukları artık elle seçilir; buradan işaretlenmezler.
+            return opt.type === 'M' ? 'MISDEMEANOR' : null;
           }
         },
         {
