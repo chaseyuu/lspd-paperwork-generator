@@ -284,6 +284,20 @@
       ctrl = buildCharges(f, labelId);
       wrap.appendChild(ctrl.node);
     } else if (f.type === 'select') {
+      if (f.fillTarget) {
+        // Picking an option here starts (or refreshes) another field's text with this option's
+        // value — e.g. a "Kanıt Türü" picker filling the editable "Kanıt Başlığı" box next to it.
+        // Only overwrites what's empty or was itself last filled this same way (dataset.autofill,
+        // same convention as the officer-prefill mechanism), so an edit the user typed by hand is
+        // never clobbered by picking a different type afterward.
+        f.onChange = function (value) {
+          var target = controls[f.fillTarget];
+          if (!target || !target.input) return;
+          if (target.input.value && !target.input.dataset.autofill) return;
+          target.set(value);
+          if (value) target.input.dataset.autofill = '1'; else delete target.input.dataset.autofill;
+        };
+      }
       ctrl = buildSelect(f, labelId);
       wrap.appendChild(ctrl.node);
     } else {
@@ -396,6 +410,9 @@
         for (var k in f) copy[k] = f[k];
         copy.key = section.key + '_' + n + '_' + f.suffix;
         if (typeof copy.label === 'string') copy.label = copy.label.replace(/\{\{N\}\}/g, n);
+        // fillTarget on a group field names a sibling field's *suffix*; resolve it to that
+        // instance's real key (e.g. "BASLIK" -> "KANIT_3_BASLIK") before buildField ever sees it.
+        if (copy.fillTarget) copy.fillTarget = section.key + '_' + n + '_' + copy.fillTarget;
         return copy;
       });
     }

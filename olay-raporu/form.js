@@ -327,14 +327,15 @@ window.REPORT_FORM = {
       "addLabel": "Kanıt Ekle",
       "target": "KANIT_LISTESI",
       "joinWith": "\n",
-      "cols": 2,
+      "cols": 3,
       "fields": [
         {
-          "suffix": "BASLIK",
-          "label": "{{N}}) Kanıt Başlığı",
+          "suffix": "TUR",
+          "label": "{{N}}) Kanıt Türü",
           "type": "select",
           "search": true,
-          "placeholder": "—",
+          "placeholder": "Seçim Yapın",
+          "fillTarget": "BASLIK",
           "values": [
             { "label": "Olay Raporu", "value": "OR — 00/00/2025 — 00000" },
             { "label": "İfade Raporu", "value": "IR — 00/00/2025 — 00000" },
@@ -352,6 +353,12 @@ window.REPORT_FORM = {
             { "label": "APB", "value": "APB - Şüpheli Adı (APB Numarası)" },
             { "label": "Coroner Raporu", "value": "Coroner Raporu (Mağdur Adı)" }
           ]
+        },
+        {
+          "suffix": "BASLIK",
+          "label": "{{N}}) Kanıt Başlığı",
+          "type": "text",
+          "placeholder": "—"
         },
         {
           "suffix": "ICERIK",
