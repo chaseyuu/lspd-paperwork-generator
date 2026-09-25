@@ -352,6 +352,7 @@ window.REPORT_FORM = {
  * {İhlal Tarihi} tarihinde, {İhlal Saati}'de {Şüpheli Ad Soyadı} tarafından sürülen {Plaka} plakalı,
  * {Model} model aracın, San Andreas Ceza Kanunu'nun {Kanunlar: numara. ad (tür)} maddelerini ihlal etmesi
  * üzerine {Kaç Gün Çekildi?} günlüğüne çekimi sağlandı.
+ * Bilgi girildikçe canlı yazılır; henüz girilmemiş kısımlar {Alan} olarak görünür.
  */
 (function () {
   var MONTHS = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
@@ -405,19 +406,25 @@ window.REPORT_FORM = {
   window.REPORT_FORM.autoText = {
     target: 'AIKLAMA_21HVEH',
     build: function (v) {
-      var date = longDate(v.HLAL_TARIH_538EMNO);
-      var time = timeWithSuffix(v.HLAL_SAATI_13562E);
-      var name = titleCase(v.AD_SOYADI_2911L1G);
-      var plate = String(v.PLAKA_2667IPU || '').trim().toLocaleUpperCase('en-US');
-      var model = titleCase(v.MODEL_2555NYG);
-      var charges = chargeList(v.SUCLAMA);
       var days = String(v.CEKIM_GUN || '').trim();
       if (!/^\d+$/.test(days) || Number(days) < 1 || Number(days) > 30) days = '';
-      // Written only once every piece is filled in.
-      if (!date || !time || !name || !plate || !model || !charges || !days) return '';
-      return date + ' tarihinde, ' + time + ' ' + name + ' tarafından sürülen ' + plate + ' plakalı, ' +
-        model + " model aracın, San Andreas Ceza Kanunu'nun " + charges +
-        ' maddelerini ihlal etmesi üzerine ' + days + ' günlüğüne çekimi sağlandı.';
+      var parts = {
+        date: longDate(v.HLAL_TARIH_538EMNO),
+        time: timeWithSuffix(v.HLAL_SAATI_13562E),
+        name: titleCase(v.AD_SOYADI_2911L1G),
+        plate: String(v.PLAKA_2667IPU || '').trim().toLocaleUpperCase('en-US'),
+        model: titleCase(v.MODEL_2555NYG),
+        charges: chargeList(v.SUCLAMA),
+        days: days,
+      };
+      // Live preview: written as soon as any piece is known; missing pieces show as {Alan}.
+      var any = parts.time || parts.name || parts.plate || parts.model || parts.charges || parts.days;
+      if (!any) return '';
+      function p(k, label) { return parts[k] || '{' + label + '}'; }
+      return p('date', 'İhlal Tarihi') + ' tarihinde, ' + p('time', 'İhlal Saati') + ' ' + p('name', 'Şüpheli Ad Soyadı') +
+        ' tarafından sürülen ' + p('plate', 'Plaka') + ' plakalı, ' + p('model', 'Model') +
+        " model aracın, San Andreas Ceza Kanunu'nun " + p('charges', 'Kanunlar') +
+        ' maddelerini ihlal etmesi üzerine ' + p('days', 'Kaç Gün') + ' günlüğüne çekimi sağlandı.';
     },
   };
 })();

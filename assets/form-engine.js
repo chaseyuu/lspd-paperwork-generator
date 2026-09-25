@@ -425,6 +425,8 @@
     var vals = values();
     output = fill(def.template, vals, true);
     titleInput.value = fill(def.titleTemplate || '', vals, false);
+    var code = document.getElementById('result-code');
+    if (code) code.value = output;
     formView.hidden = true;
     resultView.hidden = false;
     window.scrollTo(0, 0);

@@ -60,6 +60,10 @@ html[data-theme="light"] .help .tip { background: #fff; box-shadow: 0 6px 16px r
 /* Result view */
 .result-title-row { display: flex; gap: 12px; margin-top: 16px; }
 .result-title-row .input { flex: 1; }
+textarea.code-box {
+  display: block; margin-top: 16px; min-height: 320px; resize: vertical;
+  font-family: Consolas, 'Courier New', monospace; font-size: .8125rem; line-height: 1.5; white-space: pre; overflow: auto;
+}
 
 /* Search box inside select lists */
 .select-search-wrap {

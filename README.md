@@ -16,7 +16,7 @@ yazı, açıklama, ipucu, seçenekler) ve raporun HTML çıktı şablonunu tanı
 ifadeleri formdaki değerlerle değiştirilir. Formu ekrana çizen ve raporu oluşturan ortak kod
 `assets/form-engine.js`, ek görünüm kuralları `assets/form.css` dosyasındadır.
 
-- **Oluştur** düğmesi raporu hazırlar ve rapor başlığını gösterir.
+- **Oluştur** düğmesi raporu hazırlar; rapor başlığı ve raporun kaynak kodu (HTML) gösterilir.
 - **Raporu Kopyala** raporun HTML kodunu, **Başlığı Kopyala** rapor başlığını panoya kopyalar.
 - **Kanunlar** alanı Tutuklama Hesaplayıcı'daki suçlama menüsünün aynısıdır (`assets/penal-code.js`).
   Araç El Koyma Formu'nda 115 ve 400–500 arasındaki maddeler listelenir; **İhlal Ekle** ile birden fazla
@@ -30,7 +30,7 @@ ifadeleri formdaki değerlerle değiştirilir. Formu ekrana çizen ve raporu olu
 - Genel Bilgiler'deki Tarih alanı bilgisayarın o günkü tarihiyle başlar.
 - Boş bırakılan alanlar raporda `—` olarak yazılır.
 - **Açıklama** alanı, gerekli bilgiler (İhlal Tarih, İhlal Saati, Şüpheli Ad Soyadı, Plaka, Model, Kanunlar ve
-  Kaç Gün Çekildi?) girildiğinde otomatik yazılır; örneğin: *25 Eylül 2026 tarihinde, 1312'de Yair Montanez
+  Kaç Gün Çekildi?) girildikçe canlı olarak yazılır (henüz girilmemiş kısımlar `{Alan}` şeklinde görünür); örneğin: *25 Eylül 2026 tarihinde, 1312'de Yair Montanez
   tarafından sürülen JBC123 plakalı, Scout model aracın, San Andreas Ceza Kanunu'nun 115. Kolluk Kuvvetlerinden
   Kaçmak (F), 401. Geçerli Bir Sürücü Lisansı Olmadan Araç Kullanma (M) ve 410. Hız İhlali (I) maddelerini ihlal
   etmesi üzerine 7 günlüğüne çekimi sağlandı.* Açıklama elle değiştirilirse otomatik yazım durur; kutu
