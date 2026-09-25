@@ -1,7 +1,7 @@
-/* Field Interview Kartı: alanlar ve çıktı şablonu (BBCode). */
+/* Field Interview Kart: alanlar ve çıktı şablonu (BBCode). */
 window.REPORT_FORM = {
   "emptyValue": "—",
-  "title": "Field Interview Kartı",
+  "title": "Field Interview Kart",
   "titleTemplate": "{ADI_SOYADI_1593E71} - {TARIH_89ZX5M}",
   "outputFormat": "bbcode",
   "draftMaxAgeMs": 3600000,
