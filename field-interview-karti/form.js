@@ -166,13 +166,15 @@ window.REPORT_FORM = {
           "type": "text",
           "placeholder": "Adı Soyadı",
           "hint": "Büyük harflerle doldurun.",
-          "upper": "en"
+          "upper": "en",
+          "default": "—"
         },
         {
           "key": "SERI_NO_214NCC8",
           "label": "Seri No.",
           "type": "text",
-          "placeholder": "00000"
+          "placeholder": "00000",
+          "default": "—"
         },
         {
           "key": "DIVISION_10SBD3",
@@ -192,10 +194,23 @@ window.REPORT_FORM = {
         {
           "key": "GREVLENDIRME_602AO4K",
           "label": "Görevlendirme",
-          "type": "text",
-          "hint": "Büyük harflerle doldurun.",
-          "tooltip": "A/O/FS/GIT, GED vb..",
-          "upper": "en"
+          "type": "select",
+          "search": true,
+          "values": [
+            { "label": "Adam", "value": "A" },
+            { "label": "Desk Officer", "value": "DESK" },
+            { "label": "Detective Unit", "value": "W" },
+            { "label": "Extra Patrol Unit", "value": "X" },
+            { "label": "Field Supervisor", "value": "FS" },
+            { "label": "Gang Enforcement Detail", "value": "GIT, GED" },
+            { "label": "Mary", "value": "M" },
+            { "label": "Metropolitan Division Unit", "value": "R" },
+            { "label": "Other Units (Lincoln dahil)", "value": "O" },
+            { "label": "Senior Lead Officer", "value": "SL" },
+            { "label": "Tom", "value": "T" },
+            { "label": "Tom Lincoln", "value": "TL" }
+          ],
+          "default": "A"
         }
       ]
     }

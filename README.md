@@ -72,8 +72,10 @@ Kartı'nda olduğu gibi) çıktı ham BBCode metni olarak üretilir.
 - **Field Interview Kartı** çıktısı HTML değil **BBCode**'dur (forum yazılımına doğrudan yapıştırılabilir).
   **Memur** (1.) ve onun **Seri No.**'su sağ üstte seçili karakterin bilgileriyle otomatik doldurulur
   (diğer formlardaki Personel Bilgisi ile aynı mekanizma); ikinci **Memur** ve onun **Seri No.**'su elle
-  yazılır, otomatik doldurulmaz. Diğer tüm alanlar da (Cinsiyet ve Kişi Bilgisi hariç, bunlar seçmelidir)
-  elle doldurulur; boş bırakılırlarsa raporda `—` yazılır.
+  yazılır ve boş bırakılırsa (tek memur varsa) `—` olarak kutuda hazır gelir, gerekirse üzerine
+  yazılabilir. **Görevlendirme** alanı Araç El Koyma Formu'ndakiyle aynı aramalı seçim listesidir.
+  Diğer tüm alanlar da (Cinsiyet, Kişi Bilgisi ve Görevlendirme hariç, bunlar seçmelidir) elle
+  doldurulur; boş bırakılırlarsa raporda `—` yazılır.
 
 ## Ortak tasarım
 
