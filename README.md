@@ -1,10 +1,10 @@
-# Evrak Oluşturucu
+# Rapor Oluşturucu
 
-LSPD Tools ailesinin evrak oluşturma aracı. Yayındaki adres: https://chaseyuu.github.io/lspd-paperwork-generator/
+LSPD Tools ailesinin rapor oluşturma aracı. Yayındaki adres: https://chaseyuu.github.io/lspd-paperwork-generator/
 
 ## Oluşturucular
 
-| Evrak | Klasör | Durum |
+| Rapor | Klasör | Durum |
 |---|---|---|
 | Araç El Koyma Raporu | `arac-el-koyma-raporu/` | Hazırlanıyor |
 | İhlal Raporu | `ihlal-raporu/` | Hazırlanıyor |
