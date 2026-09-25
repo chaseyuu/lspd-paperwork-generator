@@ -25,16 +25,20 @@
  *                        chosen article to a key into typeTargets, overriding the default (the
  *                        article's own type letter) — used to split "I" into separate boxes by
  *                        article range.
- * Repeatable groups: a def.sections entry with group:true (key, label, min, max, target, blockTemplate,
- *                     joinWith, addLabel, cols, fields) renders `min` panels titled "label (n)" plus a
- *                     "+ label Ekle" button (up to `max`); only instances past `min` can be removed, and
- *                     only the last one (so numbering never has gaps). Its `fields` use {suffix, ...}
- *                     instead of {key, ...} — each instance n gets its own control keyed
- *                     `${key}_${n}_${suffix}`. blockTemplate is a single instance's chunk of the output,
- *                     written with literal "{{N}}" where the instance number goes (e.g.
- *                     "{KISI_{{N}}_ADI_SOYADI}"); at generate time every instance's filled blockTemplate
- *                     is joined with joinWith (default "\n\n") and substituted into the main template at
- *                     {target}.
+ * Repeatable groups: a def.sections entry with group:true (key, label, title, min, max, target,
+ *                     blockTemplate, joinWith, addLabel, cols, panelPerInstance, fields) renders `min`
+ *                     instances plus an add button (up to `max`); only instances past `min` can be
+ *                     removed, and only the last one (so numbering never has gaps). Its `fields` use
+ *                     {suffix, ...} instead of {key, ...} — each instance n gets its own control keyed
+ *                     `${key}_${n}_${suffix}`, and literal "{{N}}" inside a field's label is replaced
+ *                     with n (e.g. label: "{{N}}) Kanıt Başlığı"). panelPerInstance (default true) picks
+ *                     the layout: true gives each instance its own titled panel ("İlgili Kişi (1)",
+ *                     "(2)", ...); false puts every instance's fields in one shared panel (section.title)
+ *                     with the add button as the grid's last row (e.g. a 6th/7th Kanıt pair). blockTemplate
+ *                     is a single instance's chunk of the output, written with literal "{{N}}" where the
+ *                     instance number goes (e.g. "{KISI_{{N}}_ADI_SOYADI}"); at generate time every
+ *                     instance's filled blockTemplate is joined with joinWith (default "\n\n") and
+ *                     substituted into the main template at {target}.
  * Template placeholders: {KEY}.
  */
 (function () {
@@ -343,80 +347,151 @@
     return { wrap: wrap, ctrl: ctrl };
   }
 
-  /* ---------- Repeatable field group (e.g. "İlgili Kişi (1)", "(2)", + "Kişi Ekle") ----------
+  /* ---------- Repeatable field group ----------
    * section.fields use {suffix, ...} instead of {key, ...}; each instance n gets its own control
-   * keyed section.key + '_' + n + '_' + suffix. section.blockTemplate is a per-instance BBCode/HTML
-   * chunk using {KEY_{{N}}_SUFFIX}-style placeholders (literal "{{N}}"), joined with section.joinWith
-   * and written into the main template at {section.target} when the report is generated. */
+   * keyed section.key + '_' + n + '_' + suffix, and any literal "{{N}}" in a field's label is
+   * replaced with n. section.blockTemplate is a per-instance BBCode/HTML chunk using
+   * {KEY_{{N}}_SUFFIX}-style placeholders (literal "{{N}}"), joined with section.joinWith and
+   * written into the main template at {section.target} when the report is generated.
+   * section.panelPerInstance (default true) picks the layout:
+   *  - true: each instance is its own titled panel — "İlgili Kişi (1)", "(2)", ... — with a
+   *    "+ label Ekle" button after the last one (e.g. İlgili Kişi).
+   *  - false: a single panel (section.title) holds every instance's fields in one grid, with the
+   *    add button as the grid's last (span-all) row (e.g. Kanıtlar, adding a 6th/7th pair).
+   * Either way only the last instance past section.min can be removed, so numbering never gaps. */
   function buildGroupSection(section) {
-    var container = el('div', { class: 'group-section' });
-    form.appendChild(container);
+    var panelPerInstance = section.panelPerInstance !== false;
     var count = section.min;
-    var panels = [];   // { node, removeBtn }
     var addBtn = el('button', { type: 'button', class: 'btn' }, PLUS + (section.addLabel || (section.label + ' Ekle')));
-    var addWrap = el('div', { class: 'form-actions group-add' });
-    addWrap.appendChild(addBtn);
 
     function fieldDefsFor(n) {
       return section.fields.map(function (f) {
         var copy = {};
         for (var k in f) copy[k] = f[k];
         copy.key = section.key + '_' + n + '_' + f.suffix;
+        if (typeof copy.label === 'string') copy.label = copy.label.replace(/\{\{N\}\}/g, n);
         return copy;
       });
     }
-    function refreshRemovable() {
-      panels.forEach(function (p, idx) {
-        var n = idx + 1;
-        if (p.removeBtn) p.removeBtn.style.display = (n === count && n > section.min) ? '' : 'none';
-      });
-      addWrap.style.display = count >= section.max ? 'none' : '';
-    }
-    function buildInstance(n) {
-      var panel = el('section', { class: 'panel form-panel' });
-      var headRow = el('div', { class: 'group-head' });
-      headRow.appendChild(el('h2', {}, esc(section.label) + ' (' + n + ')'));
-      var removeBtn = null;
-      if (n > section.min) {
-        removeBtn = el('button', { type: 'button', class: 'btn icon-btn', 'aria-label': 'Kaldır', title: 'Kaldır' }, TRASH);
-        removeBtn.addEventListener('click', function () {
-          section.fields.forEach(function (f) { delete controls[section.key + '_' + n + '_' + f.suffix]; });
-          panel.remove();
-          panels.pop();
-          count--;
-          refreshRemovable();
-          scheduleAuto();
-        });
-        headRow.appendChild(removeBtn);
-      }
-      panel.appendChild(headRow);
-      var grid = el('div', { class: 'field-grid' + (section.cols === 3 ? ' cols-3' : '') });
-      fieldDefsFor(n).forEach(function (f) {
-        var built = buildField(f);
-        built.ctrl.field = f;
-        built.ctrl.wrap = built.wrap;
-        controls[f.key] = built.ctrl;
-        grid.appendChild(built.wrap);
-      });
-      panel.appendChild(grid);
-      return { node: panel, removeBtn: removeBtn };
+    function dropInstanceControls(n) {
+      section.fields.forEach(function (f) { delete controls[section.key + '_' + n + '_' + f.suffix]; });
     }
 
-    for (var i = 1; i <= section.min; i++) {
-      var inst = buildInstance(i);
-      panels.push(inst);
-      container.appendChild(inst.node);
-    }
-    container.appendChild(addWrap);
-    refreshRemovable();
-    addBtn.addEventListener('click', function () {
-      count++;
-      var inst = buildInstance(count);
-      panels.push(inst);
-      container.insertBefore(inst.node, addWrap);
+    if (panelPerInstance) {
+      var container = el('div', { class: 'group-section' });
+      form.appendChild(container);
+      var addWrap = el('div', { class: 'form-actions group-add' });
+      addWrap.appendChild(addBtn);
+      var panels = [];   // { node, removeBtn }
+
+      function refreshRemovable() {
+        panels.forEach(function (p, idx) {
+          var n = idx + 1;
+          if (p.removeBtn) p.removeBtn.style.display = (n === count && n > section.min) ? '' : 'none';
+        });
+        addWrap.style.display = count >= section.max ? 'none' : '';
+      }
+      function buildInstance(n) {
+        var panel = el('section', { class: 'panel form-panel' });
+        var headRow = el('div', { class: 'group-head' });
+        headRow.appendChild(el('h2', {}, esc(section.label) + ' (' + n + ')'));
+        var removeBtn = null;
+        if (n > section.min) {
+          removeBtn = el('button', { type: 'button', class: 'btn icon-btn', 'aria-label': 'Kaldır', title: 'Kaldır' }, TRASH);
+          removeBtn.addEventListener('click', function () {
+            dropInstanceControls(n);
+            panel.remove();
+            panels.pop();
+            count--;
+            refreshRemovable();
+            scheduleAuto();
+          });
+          headRow.appendChild(removeBtn);
+        }
+        panel.appendChild(headRow);
+        var grid = el('div', { class: 'field-grid' + (section.cols === 3 ? ' cols-3' : '') });
+        fieldDefsFor(n).forEach(function (f) {
+          var built = buildField(f);
+          built.ctrl.field = f;
+          built.ctrl.wrap = built.wrap;
+          controls[f.key] = built.ctrl;
+          grid.appendChild(built.wrap);
+        });
+        panel.appendChild(grid);
+        return { node: panel, removeBtn: removeBtn };
+      }
+
+      for (var i = 1; i <= section.min; i++) {
+        var inst = buildInstance(i);
+        panels.push(inst);
+        container.appendChild(inst.node);
+      }
+      container.appendChild(addWrap);
       refreshRemovable();
-      scheduleAuto();
-    });
+      addBtn.addEventListener('click', function () {
+        count++;
+        var inst = buildInstance(count);
+        panels.push(inst);
+        container.insertBefore(inst.node, addWrap);
+        refreshRemovable();
+        scheduleAuto();
+      });
+    } else {
+      var panel2 = el('section', { class: 'panel form-panel' });
+      panel2.appendChild(el('h2', {}, esc(section.title || section.label)));
+      var grid2 = el('div', { class: 'field-grid' + (section.cols === 3 ? ' cols-3' : '') });
+      panel2.appendChild(grid2);
+      form.appendChild(panel2);
+      var addRowWrap = el('div', { class: 'field span-all group-add-inline' });
+      addRowWrap.appendChild(addBtn);
+      grid2.appendChild(addRowWrap);
+      var entries = [];   // { wraps: [...], removeRow }
+
+      function refreshRemovable2() {
+        entries.forEach(function (e, idx) {
+          var n = idx + 1;
+          if (e.removeRow) e.removeRow.style.display = (n === count && n > section.min) ? '' : 'none';
+        });
+        addRowWrap.style.display = count >= section.max ? 'none' : '';
+      }
+      function buildInstance2(n) {
+        var wraps = [];
+        fieldDefsFor(n).forEach(function (f) {
+          var built = buildField(f);
+          built.ctrl.field = f;
+          built.ctrl.wrap = built.wrap;
+          controls[f.key] = built.ctrl;
+          grid2.insertBefore(built.wrap, addRowWrap);
+          wraps.push(built.wrap);
+        });
+        var removeRow = null;
+        if (n > section.min) {
+          removeRow = el('div', { class: 'field span-all group-inline-remove' });
+          var removeBtn2 = el('button', { type: 'button', class: 'btn icon-btn', 'aria-label': 'Kaldır', title: 'Kaldır' }, TRASH);
+          removeBtn2.addEventListener('click', function () {
+            dropInstanceControls(n);
+            wraps.forEach(function (w) { w.remove(); });
+            removeRow.remove();
+            entries.pop();
+            count--;
+            refreshRemovable2();
+            scheduleAuto();
+          });
+          removeRow.appendChild(removeBtn2);
+          grid2.insertBefore(removeRow, addRowWrap);
+        }
+        return { wraps: wraps, removeRow: removeRow };
+      }
+
+      for (var j = 1; j <= section.min; j++) entries.push(buildInstance2(j));
+      refreshRemovable2();
+      addBtn.addEventListener('click', function () {
+        count++;
+        entries.push(buildInstance2(count));
+        refreshRemovable2();
+        scheduleAuto();
+      });
+    }
 
     groups.push({ def: section, getCount: function () { return count; } });
   }
