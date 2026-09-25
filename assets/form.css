@@ -1,0 +1,47 @@
+/* Report forms: builds on /lspd-tools/assets/theme.css */
+
+.form-panel .field-grid { margin-top: 16px; }
+.field-grid.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.field.span-all { grid-column: 1 / -1; }
+
+.field .label-row { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+.field .label-row label { margin: 0; }
+.field .hint { margin-top: 6px; font-size: .75rem; color: var(--muted-foreground); }
+
+/* Fields without a leading icon */
+.input.plain, .select.plain .select-trigger { padding-left: 12px; }
+textarea.input { height: auto; min-height: 140px; padding: 10px 12px; line-height: 1.5; resize: vertical; }
+input.input[type="date"], input.input[type="time"] { cursor: text; }
+input.input[type="date"]::-webkit-calendar-picker-indicator,
+input.input[type="time"]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: .7; }
+
+/* "?" help bubble */
+.help { position: relative; display: inline-flex; color: var(--muted-foreground); cursor: help; }
+.help svg { width: 14px; height: 14px; }
+.help .tip {
+  position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translateX(-50%);
+  z-index: 40; width: max-content; max-width: 260px; padding: 6px 10px;
+  background: var(--card-hover); color: var(--foreground);
+  border: 1px solid var(--border); border-radius: 6px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, .35);
+  font-size: .75rem; font-weight: 400; line-height: 1.4;
+  opacity: 0; visibility: hidden; transition: opacity .12s;
+}
+html[data-theme="light"] .help .tip { background: #fff; box-shadow: 0 6px 16px rgba(15, 23, 42, .15); }
+.help:hover .tip, .help:focus .tip { opacity: 1; visibility: visible; }
+
+.form-actions { display: flex; justify-content: flex-end; gap: 12px; flex-wrap: wrap; margin-top: 4px; }
+.form-actions .status { margin-right: auto; align-self: center; }
+
+/* Result view */
+.result-title-row { display: flex; gap: 12px; margin-top: 16px; }
+.result-title-row .input { flex: 1; }
+.preview {
+  margin-top: 16px; padding: 16px; overflow-x: auto;
+  background: var(--field); border: 1px solid var(--border); border-radius: var(--radius);
+}
+.preview-inner { width: max-content; min-width: 100%; }
+
+@media (max-width: 900px) {
+  .field-grid.cols-3 { grid-template-columns: 1fr; }
+}

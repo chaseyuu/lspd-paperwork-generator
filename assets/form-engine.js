@@ -1,0 +1,243 @@
+/*
+ * Report form engine. A page defines window.REPORT_FORM (title, sections, fields, output template)
+ * and this script builds the form, fills officer fields from the active character, and turns the
+ * answers into the report (copy as HTML, copy title, download as image).
+ *
+ * Field types: text, select, date (dd/MM/yyyy), time (HH:mm), textarea.
+ * Field options: key, label, placeholder, hint, tooltip, values [{label, value}], default,
+ *                upper ('en' | 'tr'), span ('all'), prefill ('name' | 'badge' | 'division').
+ * Template placeholders: {KEY}.
+ */
+(function () {
+  var def = window.REPORT_FORM;
+  var CHECK = '<svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
+  var CHEVRON = '<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+  var HELP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>';
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function el(tag, attrs, html) {
+    var e = document.createElement(tag);
+    for (var k in attrs || {}) if (attrs[k] != null) e.setAttribute(k, attrs[k]);
+    if (html != null) e.innerHTML = html;
+    return e;
+  }
+
+  var controls = {};   // key -> { get(), set(v), field }
+  var form = document.getElementById('report-form');
+
+  /* ---------- Custom select (same look as the settings page) ---------- */
+  function buildSelect(f, labelId) {
+    var root = el('div', { class: 'select plain' });
+    var value = f.default || '';
+    var trigger = el('button', { type: 'button', class: 'select-trigger', 'aria-haspopup': 'listbox', 'aria-expanded': 'false', 'aria-labelledby': labelId });
+    var list = el('ul', { class: 'select-list', role: 'listbox', 'aria-labelledby': labelId });
+    f.values.forEach(function (opt) {
+      var li = el('li', { role: 'option', 'data-value': opt.value }, CHECK + '<span></span>');
+      li.lastChild.textContent = opt.label;
+      li.addEventListener('mousedown', function (e) { e.preventDefault(); });
+      li.addEventListener('click', function () { set(opt.value); close(); trigger.focus(); });
+      list.appendChild(li);
+    });
+    root.appendChild(trigger); root.appendChild(list);
+
+    function labelOf(v) {
+      for (var i = 0; i < f.values.length; i++) if (f.values[i].value === v) return f.values[i].label;
+      return '';
+    }
+    function render() {
+      var text = labelOf(value);
+      trigger.innerHTML = (text ? '<span></span>' : '<span class="placeholder"></span>') + CHEVRON;
+      trigger.firstChild.textContent = text || f.placeholder || '';
+      list.querySelectorAll('li').forEach(function (li) { li.setAttribute('aria-selected', String(li.getAttribute('data-value') === value)); });
+    }
+    function set(v) { value = labelOf(v) ? v : ''; render(); }
+    var active = -1;
+    function highlight(i) {
+      var items = list.querySelectorAll('li');
+      items.forEach(function (li) { li.classList.remove('active'); });
+      active = (i + items.length) % items.length;
+      items[active].classList.add('active');
+      items[active].scrollIntoView({ block: 'nearest' });
+    }
+    function indexOf(v) { for (var i = 0; i < f.values.length; i++) if (f.values[i].value === v) return i; return 0; }
+    function open() {
+      document.querySelectorAll('.select.open').forEach(function (o) { o.classList.remove('open'); });
+      root.classList.add('open'); trigger.setAttribute('aria-expanded', 'true');
+      highlight(indexOf(value));
+    }
+    function close() { root.classList.remove('open'); trigger.setAttribute('aria-expanded', 'false'); }
+    trigger.addEventListener('click', function () { root.classList.contains('open') ? close() : open(); });
+    trigger.addEventListener('keydown', function (e) {
+      var isOpen = root.classList.contains('open');
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (!isOpen) open(); else highlight(active + (e.key === 'ArrowDown' ? 1 : -1));
+      } else if ((e.key === 'Enter' || e.key === ' ') && isOpen) {
+        e.preventDefault(); set(f.values[active].value); close();
+      } else if (e.key === 'Escape') { close(); }
+    });
+    trigger.addEventListener('blur', close);
+    render();
+    return { node: root, get: function () { return value; }, set: set, focusEl: trigger };
+  }
+
+  /* ---------- Build the form ---------- */
+  def.sections.forEach(function (section, si) {
+    var panel = el('section', { class: 'panel form-panel', 'aria-labelledby': 'sec-' + si });
+    panel.appendChild(el('h2', { id: 'sec-' + si }, esc(section.title)));
+    var grid = el('div', { class: 'field-grid' + (section.cols === 3 ? ' cols-3' : '') });
+    section.fields.forEach(function (f) {
+      var id = 'f-' + f.key, labelId = id + '-label';
+      var wrap = el('div', { class: 'field' + (f.span === 'all' ? ' span-all' : '') });
+      var labelRow = el('div', { class: 'label-row' });
+      labelRow.appendChild(el('label', { id: labelId, for: f.type === 'select' ? null : id }, esc(f.label)));
+      if (f.tooltip) labelRow.appendChild(el('span', { class: 'help', tabindex: '0', 'aria-label': f.tooltip }, HELP + '<span class="tip" role="tooltip">' + esc(f.tooltip) + '</span>'));
+      wrap.appendChild(labelRow);
+
+      var ctrl;
+      if (f.type === 'select') {
+        ctrl = buildSelect(f, labelId);
+        wrap.appendChild(ctrl.node);
+      } else {
+        var input = f.type === 'textarea'
+          ? el('textarea', { class: 'input plain', id: id, rows: f.rows || 6, placeholder: f.placeholder || null })
+          : el('input', {
+              class: 'input plain', id: id, autocomplete: 'off', placeholder: f.placeholder || null,
+              type: f.type === 'date' ? 'date' : f.type === 'time' ? 'time' : 'text',
+            });
+        if (f.upper) {
+          input.addEventListener('input', function () {
+            var pos = input.selectionStart;
+            input.value = input.value.toLocaleUpperCase(f.upper === 'tr' ? 'tr-TR' : 'en-US');
+            try { input.setSelectionRange(pos, pos); } catch (e) {}
+          });
+        }
+        input.addEventListener('input', function () { delete input.dataset.autofill; });
+        wrap.appendChild(input);
+        ctrl = { get: function () { return input.value; }, set: function (v) { input.value = v || ''; }, focusEl: input, input: input };
+      }
+      if (f.hint) wrap.appendChild(el('p', { class: 'hint' }, esc(f.hint)));
+      ctrl.field = f;
+      controls[f.key] = ctrl;
+      grid.appendChild(wrap);
+    });
+    panel.appendChild(grid);
+    form.appendChild(panel);
+  });
+
+  /* ---------- Officer fields from the active character ---------- */
+  function prefill() {
+    if (!window.LSPDPrefs) return;
+    var c = LSPDPrefs.getActiveCharacter() || {};
+    Object.keys(controls).forEach(function (key) {
+      var ctrl = controls[key], src = ctrl.field.prefill;
+      if (!src) return;
+      var value = c[src] || '';
+      if (ctrl.field.upper) value = value.toLocaleUpperCase('en-US');
+      if (ctrl.input) {
+        // Only replace what is empty or was filled in automatically.
+        if (ctrl.input.value && !ctrl.input.dataset.autofill) return;
+        ctrl.set(value);
+        if (value) ctrl.input.dataset.autofill = '1'; else delete ctrl.input.dataset.autofill;
+      } else {
+        ctrl.set(value);
+      }
+    });
+  }
+  prefill();
+  document.addEventListener('lspd:characters-change', prefill);
+
+  /* ---------- Output ---------- */
+  function formatValue(f, v) {
+    if (!v) return '';
+    if (f.type === 'date') {
+      var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v);
+      return m ? m[3] + '/' + m[2] + '/' + m[1] : v;
+    }
+    if (f.upper) v = v.toLocaleUpperCase(f.upper === 'tr' ? 'tr-TR' : 'en-US');
+    return v;
+  }
+  function values() {
+    var out = {};
+    Object.keys(controls).forEach(function (key) { out[key] = formatValue(controls[key].field, controls[key].get()); });
+    return out;
+  }
+  function fill(template, vals, html) {
+    return template.replace(/\{([A-Z0-9_]+)\}/g, function (m, key) {
+      if (!(key in vals)) return m;
+      return html ? esc(vals[key]).replace(/\r?\n/g, '<br>') : vals[key];
+    });
+  }
+
+  var formView = document.getElementById('form-view');
+  var resultView = document.getElementById('result-view');
+  var titleInput = document.getElementById('result-title');
+  var preview = document.getElementById('preview');
+  var statusEl = document.getElementById('result-status');
+  var output = '', statusTimer;
+
+  function showStatus(text) {
+    statusEl.textContent = text;
+    statusEl.classList.add('show');
+    clearTimeout(statusTimer);
+    statusTimer = setTimeout(function () { statusEl.classList.remove('show'); }, 2500);
+  }
+  function copy(text) {
+    if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text);
+    var ta = el('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+    return Promise.resolve();
+  }
+
+  document.getElementById('generate-btn').addEventListener('click', function () {
+    var vals = values();
+    output = fill(def.template, vals, true);
+    titleInput.value = fill(def.titleTemplate || '', vals, false);
+    preview.innerHTML = '<div class="preview-inner">' + output + '</div>';
+    formView.hidden = true;
+    resultView.hidden = false;
+    window.scrollTo(0, 0);
+  });
+  document.getElementById('edit-btn').addEventListener('click', function () {
+    resultView.hidden = true;
+    formView.hidden = false;
+    window.scrollTo(0, 0);
+  });
+  document.getElementById('copy-title-btn').addEventListener('click', function () {
+    copy(titleInput.value).then(function () { showStatus('Başlık kopyalandı.'); });
+  });
+  document.getElementById('copy-btn').addEventListener('click', function () {
+    copy(output).then(function () { showStatus('Rapor kopyalandı.'); });
+  });
+
+  function loadHtml2canvas() {
+    if (window.html2canvas) return Promise.resolve(window.html2canvas);
+    return new Promise(function (resolve, reject) {
+      var s = el('script', { src: 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js' });
+      s.onload = function () { resolve(window.html2canvas); };
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+  document.getElementById('download-btn').addEventListener('click', function () {
+    var target = preview.querySelector('.preview-inner > *') || preview;
+    loadHtml2canvas().then(function (h2c) {
+      // Page scaling on wide screens must not end up in the image.
+      var zoom = document.documentElement.style.zoom;
+      document.documentElement.style.zoom = '';
+      return h2c(target, { backgroundColor: '#ffffff', scale: 2, useCORS: true }).then(function (canvas) {
+        document.documentElement.style.zoom = zoom;
+        var a = el('a');
+        var name = (titleInput.value || def.title).replace(/[\\/:*?"<>|]+/g, '-').trim();
+        a.download = name + '.png';
+        a.href = canvas.toDataURL('image/png');
+        a.click();
+        showStatus('Görsel indiriliyor.');
+      }, function (err) { document.documentElement.style.zoom = zoom; throw err; });
+    }).catch(function () { showStatus('Görsel oluşturulamadı.'); });
+  });
+})();
