@@ -9,6 +9,8 @@
  *                upper ('en' | 'tr'), span ('all'), prefill ('name' | 'badge' | 'division'), search (true),
  *                ids / ranges / types / target / typeTargets / typeOn / typeOff / classify (charges only),
  *                locked (select, text), today (date: starts with the computer's date).
+ * default on a text/textarea field sets its starting value (e.g. "—" for an optional field); the
+ * user can still edit or clear it, and it counts as filled for the required-field check.
  * Top-level def.outputFormat: 'bbcode' outputs the template with raw values (no HTML-escaping, no
  *                              newline-to-<br> conversion); anything else (default) outputs HTML.
  * Charges-only options: ids/ranges narrow the list by article number, types narrows it by penal
@@ -281,6 +283,11 @@
           // Today's date from the computer's clock (local time, not UTC).
           var now = new Date();
           input.value = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+        }
+        if (f.default != null && (f.type === 'text' || f.type === 'textarea' || !f.type)) {
+          // Starting value for a free-typed field (e.g. "—" for an optional second officer);
+          // counts as filled for the required-field check, but the user can still overwrite it.
+          input.value = f.default;
         }
         input.addEventListener('input', function () { delete input.dataset.autofill; });
         if (f.locked) {
