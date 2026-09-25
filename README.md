@@ -83,11 +83,16 @@ Kartı'nda olduğu gibi) çıktı ham BBCode metni olarak üretilir.
 - **Olay Raporu** çıktısı da Field Interview Kartı gibi **BBCode**'dur ve **alanlar zorunlu değildir**;
   boş bırakılan herhangi bir alan raporda otomatik olarak `—` yazılır. Personel Bilgileri'ndeki
   Adı Soyadı, Seri No. ve Division sağ üstte seçili karakterle otomatik doldurulur; Tarih bilgisayarın
-  o günkü tarihiyle başlar. İlgili Kişi (1) ve (2) bölümlerindeki Adı Soyadı, İletişim Bilgisi ve
-  Adresi kutuları boşken hazır olarak `—` gösterir; **Statü** varsayılan olarak **Hiçbiri**'dir. Olay
-  Türü kutucukları (Araç Takibi, Silahlı Saldırı, Cinayet vb.) ve Süreç kutucukları (Güç Kullanıldı,
-  Tutuklama Yapıldı vb.) varsayılan olarak **Hayır**'dır. Kanıtlar bölümü en fazla 5 kanıt başlığı/
-  içeriği çiftini kabul eder; boş bırakılan çiftler raporda `—` olarak görünür.
+  o günkü tarihiyle başlar. **Olay Türü** (Araç Takibi, Silahlı Saldırı, Cinayet, Çete Bağlantılı,
+  Narkotik, Hırsızlık, Trafik Kazası, Diğer) kendi kutusunda ayrı ayrı **checkbox** olarak işaretlenir;
+  işaretlenen her kutu raporda `[cb]` yerine `[cbc]` olarak yazılır, işaretlenmeyenler `[cb]` (Hayır)
+  kalır. **İlgili Kişi** bölümü varsayılan olarak 2 kişi ile başlar; **Kişi Ekle** düğmesiyle en fazla
+  5 kişiye kadar "İlgili Kişi (3)", "(4)", "(5)" olarak çoğaltılabilir (yalnızca son eklenen kişi
+  **Kaldır** ile geri çıkarılabilir, böylece numaralandırma bozulmaz). Her kişinin Adı Soyadı,
+  İletişim Bilgisi ve Adresi kutuları boşken hazır olarak `—` gösterir; **Statü** varsayılan olarak
+  **Hiçbiri**'dir. **Açıklama** bölümündeki Süreç kutucukları (Güç Kullanıldı, Tutuklama Yapıldı vb.)
+  varsayılan olarak **Hayır**'dır. Kanıtlar bölümü en fazla 5 kanıt başlığı/içeriği çiftini kabul eder;
+  boş bırakılan çiftler raporda `—` olarak görünür.
 
 ## Ortak tasarım
 
