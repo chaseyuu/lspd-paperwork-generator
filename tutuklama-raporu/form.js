@@ -236,11 +236,37 @@ window.REPORT_FORM = {
       "label": "Kanıt",
       "title": "Kanıtlar",
       "min": 4,
-      "max": 4,
+      "max": 7,
       "addLabel": "Kanıt Ekle",
       "target": "KANIT_LISTESI",
       "joinWith": "\n",
+      "cols": 3,
       "fields": [
+        {
+          "suffix": "TUR",
+          "label": "{{N}}) Kanıt Türü",
+          "type": "select",
+          "search": true,
+          "placeholder": "Seçim Yapın",
+          "fillTarget": "BASLIK",
+          "values": [
+            { "label": "Olay Raporu", "value": "OR — 00/00/2025 — 00000" },
+            { "label": "İfade Raporu", "value": "IR — 00/00/2025 — 00000" },
+            { "label": "Evidence Locker Kaydı", "value": "EV-20260000-000" },
+            { "label": "CCTV Görüntüsü", "value": "CCTV ID #000 — Konum — GG/AA/YYYY" },
+            { "label": "DICVS Görüntüsü", "value": "DICVS Seri No. 00000 - GG/AA/YYYY" },
+            { "label": "BWV Görüntüsü", "value": "BWV A. Soyadı #00000 - GG/AA/YYYY" },
+            { "label": "Trafik Kazası Fotoğrafları", "value": "Trafik Kazası Fotoğrafları (Plaka)" },
+            { "label": "Araç El Koyma Raporu", "value": "Impound Report - Araç Modeli - Plaka" },
+            { "label": "Tutuklama Raporu", "value": "Tutuklama Raporu (Şüpheli Adı)" },
+            { "label": "FSD Balistik İnceleme Raporu", "value": "FSD Silah Adı - Balistik İncelemesi" },
+            { "label": "FSD Parmak İzi İnceleme Raporu", "value": "FSD Eşya Adı - Parmak İzi İncelemesi" },
+            { "label": "FSD DNA İnceleme Raporu", "value": "FSD DNA İnceleme Raporu" },
+            { "label": "FSD Kovan İnceleme Raporu", "value": "FSD Kovan İnceleme Raporu" },
+            { "label": "APB", "value": "APB - Şüpheli Adı (APB Numarası)" },
+            { "label": "Coroner Raporu", "value": "Coroner Raporu (Mağdur Adı)" }
+          ]
+        },
         {
           "suffix": "BASLIK",
           "label": "{{N}}) Kanıt Başlığı",
