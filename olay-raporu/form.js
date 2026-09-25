@@ -324,7 +324,7 @@ window.REPORT_FORM = {
       "label": "Kanıt",
       "title": "Kanıtlar",
       "min": 5,
-      "max": 10,
+      "max": 15,
       "addLabel": "Kanıt Ekle",
       "target": "KANIT_LISTESI",
       "joinWith": "\n",
