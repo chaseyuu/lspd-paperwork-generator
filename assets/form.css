@@ -19,6 +19,14 @@ input.input[type="time"]::-webkit-calendar-picker-indicator { cursor: pointer; o
 .select.locked .select-trigger { cursor: not-allowed; opacity: .75; }
 .select.locked .select-trigger .chevron { opacity: .5; }
 
+.locked-input { position: relative; }
+.locked-input .input { padding-right: 36px; cursor: not-allowed; opacity: .75; }
+.locked-input .input:focus { border-color: var(--input); box-shadow: none; }
+.locked-input .chevron {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  width: 16px; height: 16px; opacity: .5; pointer-events: none;
+}
+
 /* Select list with a search box */
 .select-list ul { margin: 0; padding: 0; list-style: none; }
 .select-list li[hidden], .select-empty[hidden] { display: none; }

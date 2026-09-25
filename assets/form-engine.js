@@ -7,7 +7,7 @@
  *              charges (penal code picker that writes article numbers into f.target).
  * Field options: key, label, placeholder, hint, tooltip, values [{label, value}], default,
  *                upper ('en' | 'tr'), span ('all'), prefill ('name' | 'badge' | 'division'), search (true),
- *                ids / ranges / target / typeTargets / typeOn / typeOff (charges only), locked (select).
+ *                ids / ranges / target / typeTargets / typeOn / typeOff (charges only), locked (select, text).
  * Template placeholders: {KEY}.
  */
 (function () {
@@ -234,7 +234,17 @@
           });
         }
         input.addEventListener('input', function () { delete input.dataset.autofill; });
-        wrap.appendChild(input);
+        if (f.locked) {
+          // Filled automatically (e.g. from the charge picker); not editable by hand.
+          input.readOnly = true;
+          input.tabIndex = -1;
+          var lockWrap = el('div', { class: 'locked-input', title: f.lockedTitle || null });
+          lockWrap.appendChild(input);
+          lockWrap.insertAdjacentHTML('beforeend', LOCK);
+          wrap.appendChild(lockWrap);
+        } else {
+          wrap.appendChild(input);
+        }
         ctrl = { get: function () { return input.value; }, set: function (v) { input.value = v || ''; }, focusEl: input, input: input };
       }
       if (f.hint) wrap.appendChild(el('p', { class: 'hint' }, esc(f.hint)));

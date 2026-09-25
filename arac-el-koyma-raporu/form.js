@@ -278,7 +278,9 @@ window.REPORT_FORM = {
           "label": "Ceza Kanunu",
           "type": "text",
           "placeholder": "401, 410",
-          "hint": "San Andreas Ceza Kanununa göre ihlal edilen kanunların kodlarını yazın."
+          "hint": "San Andreas Ceza Kanununa göre ihlal edilen kanunların kodlarını yazın.",
+          "locked": true,
+          "lockedTitle": "Seçilen suçlamalara göre otomatik doldurulur."
         },
         {
           "key": "HLAL_TARIH_538EMNO",
