@@ -1,7 +1,7 @@
-/* İhlal Raporu Formu: alanlar ve çıktı şablonu. */
+/* İhlal Raporu: alanlar ve çıktı şablonu. */
 window.REPORT_FORM = {
   "emptyValue": "—",
-  "title": "İhlal Raporu Formu",
+  "title": "İhlal Raporu",
   "required": true,
   "sections": [
     {
