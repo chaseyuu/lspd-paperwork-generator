@@ -242,13 +242,28 @@
         wrap.appendChild(ctrl.node);
       } else {
         var input = f.type === 'textarea'
-          ? el('textarea', { class: 'input plain', id: id, rows: f.rows || 6, placeholder: f.placeholder || null })
+          ? el('textarea', {
+              class: 'input plain', id: id, rows: f.rows || 6, placeholder: f.placeholder || null,
+              autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'data-lpignore': 'true', 'data-1p-ignore': 'true',
+            })
           : el('input', {
-              class: 'input plain', id: id, autocomplete: 'off', placeholder: f.placeholder || null,
+              class: 'input plain', id: id, placeholder: f.placeholder || null,
               type: f.type === 'date' ? 'date' : f.type === 'time' ? 'time' : f.type === 'number' ? 'number' : 'text',
               min: f.min != null ? f.min : null, max: f.max != null ? f.max : null,
               inputmode: f.type === 'number' ? 'numeric' : null,
+              // Chrome ignores autocomplete="off" for name/address-shaped fields; "off" is still
+              // set for other browsers/password managers, plus the readonly-until-focus trick below
+              // (Chrome ve tarayıcıların otomatik doldurmasını engellemek için: Google/tarayıcı
+              // kayıtlı adres, isim vb. gerçek (OOC) bilgileri karakterin alanlarına yazmasın).
+              autocomplete: 'off', autocapitalize: 'off', 'data-lpignore': 'true', 'data-1p-ignore': 'true', 'data-form-type': 'other',
             });
+        // Readonly until the user actually focuses the field: browsers do not autofill readonly
+        // inputs, so this blocks the page-load autofill pass that would otherwise overwrite a
+        // "name"/"address"-labelled field with the browser's saved real (OOC) profile data.
+        if ((f.type === 'text' || f.type === 'textarea' || !f.type) && !f.locked) {
+          input.setAttribute('readonly', 'readonly');
+          input.addEventListener('focus', function () { input.removeAttribute('readonly'); }, { once: true });
+        }
         if (f.upper) {
           input.addEventListener('input', function () {
             var pos = input.selectionStart;
