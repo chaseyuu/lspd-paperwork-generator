@@ -2,6 +2,7 @@
 window.REPORT_FORM = {
   "emptyValue": "—",
   "title": "İhlal Raporu Formu",
+  "required": true,
   "sections": [
     {
       "title": "İhlal Türü",
