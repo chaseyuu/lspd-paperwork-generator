@@ -30,7 +30,7 @@ ifadeleri formdaki değerlerle değiştirilir. Formu ekrana çizen ve raporu olu
 - Genel Bilgiler'deki Tarih alanı bilgisayarın o günkü tarihiyle başlar.
 - Boş bırakılan alanlar raporda `—` olarak yazılır.
 - **Açıklama** alanı, gerekli bilgiler (İhlal Tarih, İhlal Saati, Şüpheli Ad Soyadı, Plaka, Model, Kanunlar ve
-  Kaç Gün Çekildi?) girildikçe canlı olarak yazılır (henüz girilmemiş kısımlar `{Alan}` şeklinde görünür); örneğin: *25 Eylül 2026 tarihinde, 1312'de Yair Montanez
+  Kaç Gün Çekildi?) girildikçe canlı olarak yazılır (henüz girilmemiş kısımlar `{Alan}` şeklinde görünür); örneğin: *25 Eylül 2026 tarihinde, 1312'de Jonathan Mendez
   tarafından sürülen JBC123 plakalı, Scout model aracın, San Andreas Ceza Kanunu'nun 115. Kolluk Kuvvetlerinden
   Kaçmak (F), 401. Geçerli Bir Sürücü Lisansı Olmadan Araç Kullanma (M) ve 410. Hız İhlali (I) maddelerini ihlal
   etmesi üzerine 7 günlüğüne çekimi sağlandı.* Açıklama elle değiştirilirse otomatik yazım durur; kutu
@@ -43,7 +43,7 @@ ifadeleri formdaki değerlerle değiştirilir. Formu ekrana çizen ve raporu olu
   (kilitli değildir); **Misdemeanor** kutucuğu ise kilitlidir ve yalnızca seçilen kanunlara göre
   otomatik işaretlenir: herhangi bir Misdemeanor madde seçildiğinde işaretlenir. İhlal Raporu'ndaki
   **Açıklama** alanı yalnızca seçilen kanunların **tamamı 400–499 aralığındaysa** canlı olarak
-  otomatik yazılır (örn: *25 Eylül 2026 tarihinde, 1312'de Yair Montanez tarafından sürülen JBC123
+  otomatik yazılır (örn: *25 Eylül 2026 tarihinde, 1312'de Jonathan Mendez tarafından sürülen JBC123
   plakalı, Scout model aracın, Sinner Street üzerinde - BURAYA İHLALİ NASIL İHLAL ETTİĞİNİ KENDİNİZ
   YAZIN - San Andreas Ceza Kanunu'nun 410. Hız İhlali (I) maddesini ihlal etmesi üzerine para cezası
   uygulandı.*); seçilen kanunlardan biri bu aralığın dışındaysa (örn. bir Misdemeanor madde) açıklama
