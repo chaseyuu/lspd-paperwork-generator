@@ -108,7 +108,12 @@
     }
     function set(v) { sel = indexOf(v); render(); }
     function pick(li) { sel = Number(li.getAttribute('data-index')); render(); changed(); }
-    function changed() { if (f.onChange) f.onChange(sel >= 0 ? f.values[sel].value : ''); scheduleAuto(); }
+    function changed() {
+      // A real pick (never set by our own code, e.g. prefill or a default) — stop treating it
+      // as still-defaulted so prefill() won't override it on a later character switch.
+      trigger.dataset.userChanged = '1';
+      if (f.onChange) f.onChange(sel >= 0 ? f.values[sel].value : ''); scheduleAuto();
+    }
     function visible() { return Array.prototype.filter.call(list.querySelectorAll('li'), function (li) { return !li.hidden; }); }
     var active = -1;
     function highlight(i) {
@@ -617,6 +622,12 @@
         if (ctrl.input.value && !ctrl.input.dataset.autofill) return;
         ctrl.set(value);
         if (value) ctrl.input.dataset.autofill = '1'; else delete ctrl.input.dataset.autofill;
+      } else if (ctrl.focusEl) {
+        // Select: skip once the user has actually picked something themselves (dataset.userChanged,
+        // set by buildSelect's changed()); otherwise apply the prefill value, falling back to the
+        // field's own static default (e.g. Görevlendirme's "Adam") when nothing is saved for it.
+        if (ctrl.focusEl.dataset.userChanged) return;
+        ctrl.set(value || (ctrl.field.default != null ? ctrl.field.default : ''));
       } else {
         ctrl.set(value);
       }

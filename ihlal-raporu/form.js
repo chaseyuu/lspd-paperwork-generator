@@ -111,6 +111,7 @@ window.REPORT_FORM = {
           "label": "Görevlendirme",
           "type": "select",
           "search": true,
+          "prefill": "assignment",
           "values": [
             {
               "label": "Adam",
