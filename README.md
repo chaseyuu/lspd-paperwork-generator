@@ -18,11 +18,11 @@ ifadeleri formdaki değerlerle değiştirilir. Formu ekrana çizen ve raporu olu
 
 - **Oluştur** düğmesi raporu hazırlar ve rapor başlığını gösterir.
 - **Raporu Kopyala** raporun HTML kodunu, **Başlığı Kopyala** rapor başlığını panoya kopyalar.
-- **Suçlama** alanı Tutuklama Hesaplayıcı'daki suçlama menüsünün aynısıdır (`assets/penal-code.js`).
-  Araç El Koyma Formu'nda 115 ve 400–500 arasındaki maddeler listelenir; **Suçlama Ekle** ile birden fazla
+- **Kanunlar** alanı Tutuklama Hesaplayıcı'daki suçlama menüsünün aynısıdır (`assets/penal-code.js`).
+  Araç El Koyma Formu'nda 115 ve 400–500 arasındaki maddeler listelenir; **İhlal Ekle** ile birden fazla
   madde seçilebilir. Seçilen maddelerin yalnızca numaraları Ceza Kanunu alanına `401, 410` biçiminde yazılır.
-- İhlal Türü kutucukları (Infraction, Misdemeanor, Felony) seçilen suçlamaların türüne göre otomatik
-  işaretlenir ve elle değiştirilemez. Ceza Kanunu alanı da yalnızca Suçlama menüsünden doldurulur.
+- İhlal Türü kutucukları (Infraction, Misdemeanor, Felony) seçilen kanunların türüne göre otomatik
+  işaretlenir ve elle değiştirilemez. Ceza Kanunu alanı da yalnızca Kanunlar menüsünden doldurulur.
 - **Formu Düzenle** girilen bilgiler kaybolmadan forma geri döner.
 - Personel Bilgisi, Seri No. ve Division alanları sağ üstte seçili karakterin bilgileriyle otomatik doldurulur.
   Karakter değiştirildiğinde bu alanlar da güncellenir; elle değiştirilen bir alana dokunulmaz.

@@ -24,7 +24,7 @@ window.REPORT_FORM = {
           ],
           "default": "☐",
           "locked": true,
-          "lockedTitle": "Seçilen suçlamalara göre otomatik belirlenir."
+          "lockedTitle": "Seçilen kanunlara göre otomatik belirlenir."
         },
         {
           "key": "MISDEMEANOR_80TIL",
@@ -42,7 +42,7 @@ window.REPORT_FORM = {
           ],
           "default": "☐",
           "locked": true,
-          "lockedTitle": "Seçilen suçlamalara göre otomatik belirlenir."
+          "lockedTitle": "Seçilen kanunlara göre otomatik belirlenir."
         },
         {
           "key": "FELONY_127SK8",
@@ -60,7 +60,7 @@ window.REPORT_FORM = {
           ],
           "default": "☐",
           "locked": true,
-          "lockedTitle": "Seçilen suçlamalara göre otomatik belirlenir."
+          "lockedTitle": "Seçilen kanunlara göre otomatik belirlenir."
         }
       ]
     },
@@ -274,7 +274,7 @@ window.REPORT_FORM = {
       "fields": [
         {
           "key": "SUCLAMA",
-          "label": "Suçlama",
+          "label": "Kanunlar",
           "type": "charges",
           "span": "all",
           "ids": [
@@ -310,7 +310,7 @@ window.REPORT_FORM = {
           "placeholder": "401, 410",
           "hint": "San Andreas Ceza Kanununa göre ihlal edilen kanunların kodlarını yazın.",
           "locked": true,
-          "lockedTitle": "Seçilen suçlamalara göre otomatik doldurulur."
+          "lockedTitle": "Seçilen kanunlara göre otomatik doldurulur."
         },
         {
           "key": "HLAL_TARIH_538EMNO",

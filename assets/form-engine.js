@@ -153,7 +153,7 @@
     var options = chargeOptions(f);
     var root = el('div', { class: 'charges' });
     var rowsEl = el('div', { class: 'charge-rows' });
-    var add = el('button', { type: 'button', class: 'btn' }, PLUS + 'Suçlama Ekle');
+    var add = el('button', { type: 'button', class: 'btn' }, PLUS + 'İhlal Ekle');
     root.appendChild(rowsEl); root.appendChild(add);
     var rows = [];
 
@@ -179,11 +179,11 @@
     function addRow(focus) {
       var row = el('div', { class: 'charge-row' });
       var select = buildSelect({
-        values: options, search: true, placeholder: 'Suçlama Seçin',
-        searchPlaceholder: 'Ad veya madde numarasıyla ara...', emptyText: 'Suçlama bulunamadı.',
+        values: options, search: true, placeholder: 'Seçim Yapın',
+        searchPlaceholder: 'Ad veya madde numarasıyla ara...', emptyText: 'Kanun bulunamadı.',
         onChange: sync,
       }, labelId);
-      var remove = el('button', { type: 'button', class: 'btn icon-btn', 'aria-label': 'Suçlamayı Kaldır', title: 'Suçlamayı Kaldır' }, TRASH);
+      var remove = el('button', { type: 'button', class: 'btn icon-btn', 'aria-label': 'İhlali Kaldır', title: 'İhlali Kaldır' }, TRASH);
       row.appendChild(select.node); row.appendChild(remove);
       rowsEl.appendChild(row);
       var entry = { node: row, select: select };
@@ -340,7 +340,7 @@
       var empty = !String(c.get() || '').trim();
       c.wrap.classList.toggle('invalid', empty);
       var msg = c.wrap.querySelector('.error-msg');
-      if (empty && !msg) c.wrap.appendChild(el('p', { class: 'error-msg' }, c.field.type === 'charges' ? 'En az bir suçlama seçmelisiniz.' : 'Bu alan zorunludur.'));
+      if (empty && !msg) c.wrap.appendChild(el('p', { class: 'error-msg' }, c.field.type === 'charges' ? 'En az bir kanun seçmelisiniz.' : 'Bu alan zorunludur.'));
       if (!empty && msg) msg.remove();
       if (empty && !first) first = c;
     });
