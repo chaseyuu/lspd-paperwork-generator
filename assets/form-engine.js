@@ -216,9 +216,12 @@
       });
       var target = controls[f.target];
       if (target) {
+        // f.sortNumeric (e.g. Tutuklama Raporu) writes the article list lowest-to-highest
+        // instead of in the order the officer picked them.
+        var ordered = f.sortNumeric ? order.slice().sort(function (a, b) { return parseInt(a, 10) - parseInt(b, 10); }) : order;
         var text = f.countDuplicates
-          ? order.map(function (n) { return counts[n] > 1 ? n + ' (x' + counts[n] + ')' : n; }).join(', ')
-          : order.join(', ');
+          ? ordered.map(function (n) { return counts[n] > 1 ? n + ' (x' + counts[n] + ')' : n; }).join(', ')
+          : ordered.join(', ');
         target.set(text);
         if (target.input) delete target.input.dataset.autofill;
       }

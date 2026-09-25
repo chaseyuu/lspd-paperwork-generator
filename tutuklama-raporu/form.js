@@ -145,7 +145,8 @@ window.REPORT_FORM = {
           "span": "all",
           "target": "CEZA_KANUNU_97NVWS",
           "addLabel": "Suçlama Ekle",
-          "countDuplicates": true
+          "countDuplicates": true,
+          "sortNumeric": true
         },
         {
           "key": "CEZA_KANUNU_97NVWS",
