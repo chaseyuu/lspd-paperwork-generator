@@ -591,7 +591,7 @@
       });
     }
 
-    groups.push({ def: section, getCount: function () { return count; } });
+    groups.push({ def: section, getCount: function () { return count; }, addOne: function () { addBtn.click(); } });
   }
 
   def.sections.forEach(function (section, si) {
@@ -637,11 +637,12 @@
    * Kept up to date until the user edits the target box by hand; clearing it turns it back on. */
   var autoTimer = null;
   function scheduleAuto() {
-    if (!def.autoText) return;
     clearTimeout(autoTimer);
     autoTimer = setTimeout(updateAuto, 0);
+    scheduleDraftSave();
   }
   function updateAuto() {
+    if (!def.autoText) return;
     var target = controls[def.autoText.target];
     if (!target || !target.input) return;
     var input = target.input;
@@ -662,7 +663,54 @@
   });
   document.addEventListener('lspd:characters-change', scheduleAuto);
 
+  /* ---------- Draft auto-save (localStorage, per page, expires after 6 hours) ----------
+   * Recovers from an accidentally closed/reloaded tab. Saved on every change (debounced) and
+   * restored once on load, after the officer-prefill pass so a saved draft wins over it; a
+   * repeatable group is grown first (via its own "Ekle" button) to fit however many instances
+   * were saved. Never sent anywhere — plain browser storage, cleared automatically once stale. */
+  var DRAFT_MAX_AGE_MS = 6 * 60 * 60 * 1000;
+  var draftKey = 'lspd_draft_' + location.pathname;
+  var draftTimer = null;
+  function scheduleDraftSave() {
+    clearTimeout(draftTimer);
+    draftTimer = setTimeout(saveDraft, 400);
+  }
+  function saveDraft() {
+    var values = {};
+    Object.keys(controls).forEach(function (key) {
+      var c = controls[key];
+      if (c.noOutput) return;   // e.g. the charges picker's own row state
+      values[key] = c.get();
+    });
+    try { localStorage.setItem(draftKey, JSON.stringify({ ts: Date.now(), values: values })); } catch (e) {}
+  }
+  function loadDraft() {
+    var raw;
+    try { raw = localStorage.getItem(draftKey); } catch (e) { return; }
+    if (!raw) return;
+    var data;
+    try { data = JSON.parse(raw); } catch (e) { return; }
+    if (!data || !data.values) return;
+    if (!data.ts || Date.now() - data.ts > DRAFT_MAX_AGE_MS) {
+      try { localStorage.removeItem(draftKey); } catch (e) {}
+      return;
+    }
+    groups.forEach(function (g) {
+      var prefix = g.def.key + '_', wanted = 0;
+      Object.keys(data.values).forEach(function (k) {
+        if (k.indexOf(prefix) !== 0) return;
+        var n = parseInt(k.slice(prefix.length), 10);
+        if (n > wanted) wanted = n;
+      });
+      while (g.getCount() < wanted && g.getCount() < g.def.max) g.addOne();
+    });
+    Object.keys(data.values).forEach(function (key) {
+      if (controls[key]) controls[key].set(data.values[key]);
+    });
+  }
+
   prefill();
+  loadDraft();
   scheduleAuto();
   document.addEventListener('lspd:characters-change', prefill);
 
@@ -767,6 +815,16 @@
     if (c && c.field.type === 'number' && c.wrap.classList.contains('invalid')) checkRanges();
   });
 
+  // Warns before leaving the page with a generated report that hasn't been copied yet, so an
+  // accidental tab close/back-navigation doesn't silently lose it (the draft above only survives
+  // a *reload*, not the tab actually closing for good).
+  var reportPendingCopy = false;
+  window.addEventListener('beforeunload', function (e) {
+    if (!reportPendingCopy) return;
+    e.preventDefault();
+    e.returnValue = '';
+  });
+
   document.getElementById('generate-btn').addEventListener('click', function () {
     if (def.required && !validate()) return;
     if (!checkRanges()) return;
@@ -783,6 +841,7 @@
     if (code) code.value = output;
     formView.hidden = true;
     resultView.hidden = false;
+    reportPendingCopy = true;
     window.scrollTo(0, 0);
   });
   document.getElementById('edit-btn').addEventListener('click', function () {
@@ -798,7 +857,7 @@
     });
   }
   document.getElementById('copy-btn').addEventListener('click', function () {
-    copy(output).then(function () { showStatus('Rapor kopyalandı.'); });
+    copy(output).then(function () { showStatus('Rapor kopyalandı.'); reportPendingCopy = false; });
   });
 
 })();
