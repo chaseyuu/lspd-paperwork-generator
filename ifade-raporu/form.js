@@ -231,6 +231,7 @@ window.REPORT_FORM = {
           "placeholder": "Seçim Yapın",
           "fillTarget": "BASLIK",
           "values": [
+            { "label": "İmza", "value": "İmza" },
             { "label": "Olay Raporu", "value": "OR — 00/00/2025 — 00000" },
             { "label": "İfade Raporu", "value": "IR — 00/00/2025 — 00000" },
             { "label": "Evidence Locker Kaydı", "value": "EL/0/000/2025" },
