@@ -106,7 +106,7 @@ window.REPORT_FORM = {
               "value": "VES"
             }
           ],
-          "placeholder": "Seçim yapın.",
+          "placeholder": "Seçim Yapın",
           "prefill": "division"
         },
         {
@@ -229,7 +229,7 @@ window.REPORT_FORM = {
           "key": "KKEN_394JO84",
           "label": "KÖKEN",
           "type": "select",
-          "placeholder": "Seçim yapın.",
+          "placeholder": "Seçim Yapın",
           "values": [
             {
               "label": "Siyahi",

@@ -28,6 +28,7 @@ ifadeleri formdaki değerlerle değiştirilir. Formu ekrana çizen ve raporu olu
   Karakter değiştirildiğinde bu alanlar da güncellenir; elle değiştirilen bir alana dokunulmaz.
 - "Büyük harflerle yazın." açıklaması olan alanlar yazılırken otomatik olarak büyük harfe çevrilir.
 - Genel Bilgiler'deki Tarih alanı bilgisayarın o günkü tarihiyle başlar.
+- Bütün alanlar zorunludur (`*`). Boş alan varsa rapor oluşturulmaz; boş alanlar kırmızıyla işaretlenir.
 
 ## Ortak tasarım
 

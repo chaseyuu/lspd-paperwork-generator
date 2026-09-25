@@ -8,6 +8,11 @@
 .field .label-row label { margin: 0; }
 .field .hint { margin-top: 6px; font-size: .75rem; color: var(--muted-foreground); }
 
+/* Required fields */
+.req { margin-left: 3px; color: hsl(0 75% 62%); }
+.field.invalid .input, .field.invalid .select-trigger { border-color: hsl(0 70% 55%); }
+.error-msg { margin-top: 6px; font-size: .75rem; color: hsl(0 75% 62%); }
+
 /* Fields without a leading icon */
 .input.plain, .select.plain .select-trigger { padding-left: 12px; }
 textarea.input { height: auto; min-height: 140px; padding: 10px 12px; line-height: 1.5; resize: vertical; }

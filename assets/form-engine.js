@@ -197,7 +197,7 @@
     }
     add.addEventListener('click', function () { addRow(true); });
     addRow(false);
-    return { node: root, get: function () { return ''; }, set: function () {}, focusEl: rows[0].select.focusEl };
+    return { node: root, get: function () { return rows.map(function (r) { return r.select.get(); }).filter(Boolean).join(','); }, set: function () {}, focusEl: rows[0].select.focusEl, noOutput: true };
   }
 
   /* ---------- Build the form ---------- */
@@ -209,7 +209,7 @@
       var id = 'f-' + f.key, labelId = id + '-label';
       var wrap = el('div', { class: 'field' + (f.span === 'all' ? ' span-all' : '') });
       var labelRow = el('div', { class: 'label-row' });
-      labelRow.appendChild(el('label', { id: labelId, for: f.type === 'select' || f.type === 'charges' ? null : id }, esc(f.label)));
+      labelRow.appendChild(el('label', { id: labelId, for: f.type === 'select' || f.type === 'charges' ? null : id }, esc(f.label) + (f.locked ? '' : '<span class="req" aria-hidden="true">*</span>')));
       if (f.tooltip) labelRow.appendChild(el('span', { class: 'help', tabindex: '0', 'aria-label': f.tooltip }, HELP + '<span class="tip" role="tooltip">' + esc(f.tooltip) + '</span>'));
       wrap.appendChild(labelRow);
 
@@ -255,6 +255,7 @@
       }
       if (f.hint) wrap.appendChild(el('p', { class: 'hint' }, esc(f.hint)));
       ctrl.field = f;
+      ctrl.wrap = wrap;
       controls[f.key] = ctrl;
       grid.appendChild(wrap);
     });
@@ -296,7 +297,7 @@
   }
   function values() {
     var out = {};
-    Object.keys(controls).forEach(function (key) { out[key] = formatValue(controls[key].field, controls[key].get()); });
+    Object.keys(controls).forEach(function (key) { if (!controls[key].noOutput) out[key] = formatValue(controls[key].field, controls[key].get()); });
     return out;
   }
   function fill(template, vals, html) {
@@ -325,7 +326,41 @@
     return Promise.resolve();
   }
 
+  /* Every field is required. */
+  function validate() {
+    var first = null;
+    Object.keys(controls).forEach(function (key) {
+      var c = controls[key];
+      if (c.field.locked) return;   // filled from another field, which shows the error
+      var empty = !String(c.get() || '').trim();
+      c.wrap.classList.toggle('invalid', empty);
+      var msg = c.wrap.querySelector('.error-msg');
+      if (empty && !msg) c.wrap.appendChild(el('p', { class: 'error-msg' }, c.field.type === 'charges' ? 'En az bir suçlama seçmelisiniz.' : 'Bu alan zorunludur.'));
+      if (!empty && msg) msg.remove();
+      if (empty && !first) first = c;
+    });
+    if (first) {
+      first.wrap.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      if (first.focusEl && !first.focusEl.disabled) first.focusEl.focus({ preventScroll: true });
+    }
+    return !first;
+  }
+  // Clear a field's error as soon as it gets a value.
+  form.addEventListener('input', function () { if (form.querySelector('.invalid')) recheck(); });
+  form.addEventListener('click', function () { if (form.querySelector('.invalid')) setTimeout(recheck, 0); });
+  document.addEventListener('keyup', function () { if (form.querySelector('.invalid')) recheck(); });
+  function recheck() {
+    Object.keys(controls).forEach(function (key) {
+      var c = controls[key];
+      if (c.wrap.classList.contains('invalid') && String(c.get() || '').trim()) {
+        c.wrap.classList.remove('invalid');
+        var m = c.wrap.querySelector('.error-msg'); if (m) m.remove();
+      }
+    });
+  }
+
   document.getElementById('generate-btn').addEventListener('click', function () {
+    if (!validate()) return;
     var vals = values();
     output = fill(def.template, vals, true);
     titleInput.value = fill(def.titleTemplate || '', vals, false);
