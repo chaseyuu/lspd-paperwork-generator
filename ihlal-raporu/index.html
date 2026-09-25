@@ -3,14 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>İhlal Raporu</title>
+  <title>İhlal Raporu Formu</title>
   <link rel="icon" href="/lspd-tools/img/lspd.webp" type="image/webp">
   <script src="/lspd-tools/assets/prefs.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="/lspd-tools/assets/theme.css">
+  <link rel="stylesheet" href="../assets/form.css">
   <script src="/lspd-tools/assets/character-switcher.js" defer></script>
+  <script src="../assets/penal-code.js" defer></script>
+  <script src="form.js" defer></script>
+  <script src="../assets/form-engine.js" defer></script>
 </head>
 <body>
   <header class="app-header">
@@ -26,8 +30,47 @@
   <img class="watermark" src="/lspd-tools/img/lspd.webp" alt="" aria-hidden="true">
 
   <main>
-    <h1 class="page-title">İhlal Raporu</h1>
-    <p class="intro">Bu oluşturucu hazırlanıyor. <a href="../" style="color: var(--primary)">Rapor Oluşturucu</a> sayfasına dönebilirsin.</p>
+    <h1 class="page-title">İhlal Raporu Formu</h1>
+
+    <div id="form-view">
+      <form id="report-form" autocomplete="off" onsubmit="return false"></form>
+      <div class="form-actions">
+        <button type="button" class="btn btn-primary" id="generate-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+          Oluştur
+        </button>
+      </div>
+    </div>
+
+    <div id="result-view" hidden>
+      <section class="panel" aria-labelledby="result-title-label">
+        <h2 id="result-title-label">Rapor Başlığı</h2>
+        <div class="result-title-row">
+          <input class="input plain" id="result-title" type="text" readonly aria-labelledby="result-title-label">
+          <button type="button" class="btn" id="copy-title-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+            Başlığı Kopyala
+          </button>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="code-label">
+        <h2 id="code-label">Rapor Kaynak Kodu</h2>
+        <textarea class="input plain code-box" id="result-code" readonly spellcheck="false" aria-labelledby="code-label"></textarea>
+      </section>
+
+      <div class="form-actions">
+        <span class="status" id="result-status" role="status" aria-live="polite"></span>
+        <button type="button" class="btn" id="edit-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+          Formu Düzenle
+        </button>
+        <button type="button" class="btn btn-primary" id="copy-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+          Raporu Kopyala
+        </button>
+      </div>
+    </div>
   </main>
 </body>
 </html>

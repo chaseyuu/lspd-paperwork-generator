@@ -7,7 +7,7 @@ LSPD Tools ailesinin rapor oluşturma aracı. Yayındaki adres: https://chaseyuu
 | Rapor | Klasör | Durum |
 |---|---|---|
 | Araç El Koyma Raporu | `arac-el-koyma-raporu/` | Hazır |
-| İhlal Raporu | `ihlal-raporu/` | Hazırlanıyor |
+| İhlal Raporu | `ihlal-raporu/` | Hazır |
 
 ## Nasıl çalışır
 
@@ -36,6 +36,12 @@ ifadeleri formdaki değerlerle değiştirilir. Formu ekrana çizen ve raporu olu
   etmesi üzerine 7 günlüğüne çekimi sağlandı.* Açıklama elle değiştirilirse otomatik yazım durur; kutu
   temizlenirse yeniden başlar.
 - **Kaç Gün Çekildi?** alanı 1 ile 30 arasında bir sayı kabul eder.
+- İhlal Raporu'nda **Kanunlar** menüsü yalnızca Infraction ve Misdemeanor türündeki maddeleri listeler
+  (Felony maddeleri bu raporda seçilemez). İhlal Türü kutucukları (Trafik, Trafik Dışı, Misdemeanor)
+  seçilen maddelere göre otomatik işaretlenir: 400–444 aralığındaki bir Infraction madde **Trafik**,
+  bu aralık dışındaki bir Infraction madde **Trafik Dışı**, herhangi bir Misdemeanor madde ise
+  **Misdemeanor** kutucuğunu işaretler. İhlal Raporu'ndaki **Açıklama** alanı, Araç El Koyma
+  Formu'ndan farklı olarak elle yazılır; canlı otomatik yazım burada yoktur.
 
 ## Ortak tasarım
 
