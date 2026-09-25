@@ -9,6 +9,7 @@ LSPD Tools ailesinin rapor oluşturma aracı. Yayındaki adres: https://chaseyuu
 | Araç El Koyma Raporu | `arac-el-koyma-raporu/` | Hazır |
 | İhlal Raporu | `ihlal-raporu/` | Hazır |
 | Field Interview Kartı | `field-interview-karti/` | Hazır |
+| Olay Raporu | `olay-raporu/` | Hazır |
 
 ## Nasıl çalışır
 
@@ -79,6 +80,14 @@ Kartı'nda olduğu gibi) çıktı ham BBCode metni olarak üretilir.
   yazılabilir. **Görevlendirme** alanı Araç El Koyma Formu'ndakiyle aynı aramalı seçim listesidir.
   Diğer tüm alanlar da (Cinsiyet, Kişi Bilgisi ve Görevlendirme hariç, bunlar seçmelidir) elle
   doldurulur; boş bırakılırlarsa raporda `—` yazılır.
+- **Olay Raporu** çıktısı da Field Interview Kartı gibi **BBCode**'dur ve **alanlar zorunlu değildir**;
+  boş bırakılan herhangi bir alan raporda otomatik olarak `—` yazılır. Personel Bilgileri'ndeki
+  Adı Soyadı, Seri No. ve Division sağ üstte seçili karakterle otomatik doldurulur; Tarih bilgisayarın
+  o günkü tarihiyle başlar. İlgili Kişi (1) ve (2) bölümlerindeki Adı Soyadı, İletişim Bilgisi ve
+  Adresi kutuları boşken hazır olarak `—` gösterir; **Statü** varsayılan olarak **Hiçbiri**'dir. Olay
+  Türü kutucukları (Araç Takibi, Silahlı Saldırı, Cinayet vb.) ve Süreç kutucukları (Güç Kullanıldı,
+  Tutuklama Yapıldı vb.) varsayılan olarak **Hayır**'dır. Kanıtlar bölümü en fazla 5 kanıt başlığı/
+  içeriği çiftini kabul eder; boş bırakılan çiftler raporda `—` olarak görünür.
 
 ## Ortak tasarım
 
