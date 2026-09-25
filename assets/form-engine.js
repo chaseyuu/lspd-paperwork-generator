@@ -11,9 +11,11 @@
  *                locked (select, text), today (date: starts with the computer's date).
  * Charges-only options: ids/ranges narrow the list by article number, types narrows it by penal
  *                        code type (e.g. ["I", "M"]); with neither ids nor ranges set, all articles
- *                        matching types are offered. classify(option) maps a chosen article to a key
- *                        into typeTargets, overriding the default (the article's own type letter) —
- *                        used to split "I" into separate boxes by article range.
+ *                        matching types are offered. filter(codeEntry) can drop individual articles
+ *                        with arbitrary logic on top of ids/ranges/types. classify(option) maps a
+ *                        chosen article to a key into typeTargets, overriding the default (the
+ *                        article's own type letter) — used to split "I" into separate boxes by
+ *                        article range.
  * Template placeholders: {KEY}.
  */
 (function () {
@@ -148,7 +150,8 @@
         (f.ids || []).indexOf(c.id.replace(/[^0-9]/g, '')) >= 0 ||
         (f.ranges || []).some(function (r) { return n >= r[0] && n <= r[1]; });
       var typeMatch = !f.types || f.types.indexOf(c.type) >= 0;
-      return idMatch && typeMatch;
+      var customMatch = !f.filter || f.filter(c);
+      return idMatch && typeMatch && customMatch;
     }).map(function (c) {
       return {
         value: c.id,
@@ -438,7 +441,7 @@
     if (!checkRanges()) return;
     var vals = values();
     output = fill(def.template, vals, true);
-    titleInput.value = fill(def.titleTemplate || '', vals, false);
+    if (titleInput) titleInput.value = fill(def.titleTemplate || '', vals, false);
     var code = document.getElementById('result-code');
     if (code) code.value = output;
     formView.hidden = true;
@@ -450,9 +453,13 @@
     formView.hidden = false;
     window.scrollTo(0, 0);
   });
-  document.getElementById('copy-title-btn').addEventListener('click', function () {
-    copy(titleInput.value).then(function () { showStatus('Başlık kopyalandı.'); });
-  });
+  var copyTitleBtn = document.getElementById('copy-title-btn');
+  if (copyTitleBtn) {
+    // Not every report shows a title (e.g. İhlal Raporu has no title output).
+    copyTitleBtn.addEventListener('click', function () {
+      copy(titleInput.value).then(function () { showStatus('Başlık kopyalandı.'); });
+    });
+  }
   document.getElementById('copy-btn').addEventListener('click', function () {
     copy(output).then(function () { showStatus('Rapor kopyalandı.'); });
   });
