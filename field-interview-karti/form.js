@@ -4,6 +4,7 @@ window.REPORT_FORM = {
   "title": "Field Interview Kartı",
   "titleTemplate": "{ADI_SOYADI_1593E71} - {TARIH_89ZX5M}",
   "outputFormat": "bbcode",
+  "draftMaxAgeMs": 3600000,
   "sections": [
     {
       "title": "Kişi Bilgileri",
