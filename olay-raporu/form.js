@@ -136,116 +136,105 @@ window.REPORT_FORM = {
             { "label": "Rancho", "value": "RANCHO" },
             { "label": "LSIA", "value": "LSIA" }
           ]
-        },
+        }
+      ]
+    },
+    {
+      "title": "Olay Türü",
+      "cols": 3,
+      "fields": [
         {
           "key": "ARA_TAKIBI_4PFCW",
           "label": "Araç Takibi",
-          "type": "select",
-          "default": "[cb] Araç Takibi",
-          "values": [
-            { "label": "Evet", "value": "[cbC] Araç Takibi" },
-            { "label": "Hayır", "value": "[cb] Araç Takibi" }
-          ]
+          "type": "checkbox",
+          "onValue": "[cbC] Araç Takibi",
+          "offValue": "[cb] Araç Takibi"
         },
         {
           "key": "SILAHLI_SALDIRI_8EM9C",
           "label": "Silahlı Saldırı",
-          "type": "select",
-          "default": "[cb] Silahlı Saldırı",
-          "values": [
-            { "label": "Evet", "value": "[cbC] Silahlı Saldırı" },
-            { "label": "Hayır", "value": "[cb] Silahlı Saldırı" }
-          ]
+          "type": "checkbox",
+          "onValue": "[cbC] Silahlı Saldırı",
+          "offValue": "[cb] Silahlı Saldırı"
         },
         {
           "key": "CINAYET_12KQEB",
           "label": "Cinayet",
-          "type": "select",
-          "default": "[cb] Cinayet",
-          "values": [
-            { "label": "Evet", "value": "[cbC] Cinayet" },
-            { "label": "Hayır", "value": "[cb] Cinayet" }
-          ]
+          "type": "checkbox",
+          "onValue": "[cbC] Cinayet",
+          "offValue": "[cb] Cinayet"
         },
         {
           "key": "ETE_BALANTILI_16VQ5E",
           "label": "Çete Bağlantılı",
-          "type": "select",
-          "default": "[cb] Çete Bağlantılı",
-          "values": [
-            { "label": "Evet", "value": "[cbC] Çete Bağlantılı" },
-            { "label": "Hayır", "value": "[cb] Çete Bağlantılı" }
-          ]
+          "type": "checkbox",
+          "onValue": "[cbC] Çete Bağlantılı",
+          "offValue": "[cb] Çete Bağlantılı"
         },
         {
           "key": "NARKOTIK_201Q6T",
           "label": "Narkotik",
-          "type": "select",
-          "default": "[cb] Narkotik",
-          "values": [
-            { "label": "Evet", "value": "[cbC] Narkotik" },
-            { "label": "Hayır", "value": "[cb] Narkotik" }
-          ]
+          "type": "checkbox",
+          "onValue": "[cbC] Narkotik",
+          "offValue": "[cb] Narkotik"
         },
         {
           "key": "HIRSIZLIK_2443SO",
           "label": "Hırsızlık",
-          "type": "select",
-          "default": "[cb] Hırsızlık",
-          "values": [
-            { "label": "Evet", "value": "[cbC] Hırsızlık" },
-            { "label": "Hayır", "value": "[cb] Hırsızlık" }
-          ]
+          "type": "checkbox",
+          "onValue": "[cbC] Hırsızlık",
+          "offValue": "[cb] Hırsızlık"
         },
         {
           "key": "TRAFIK_KAZASI_28T5Y0",
           "label": "Trafik Kazası",
-          "type": "select",
-          "default": "[cb] Trafik Kazası",
-          "values": [
-            { "label": "Evet", "value": "[cbC] Trafik Kazası" },
-            { "label": "Hayır", "value": "[cb] Trafik Kazası" }
-          ]
+          "type": "checkbox",
+          "onValue": "[cbC] Trafik Kazası",
+          "offValue": "[cb] Trafik Kazası"
         },
         {
           "key": "DIER_337H01",
           "label": "Diğer",
-          "type": "select",
-          "default": "[cb] Diğer",
-          "values": [
-            { "label": "Evet", "value": "[cbC] Diğer" },
-            { "label": "Hayır", "value": "[cb] Diğer" }
-          ]
+          "type": "checkbox",
+          "onValue": "[cbC] Diğer",
+          "offValue": "[cb] Diğer"
         }
       ]
     },
     {
-      "title": "İlgili Kişi (1)",
+      "group": true,
+      "key": "KISI",
+      "label": "İlgili Kişi",
+      "min": 2,
+      "max": 5,
+      "addLabel": "Kişi Ekle",
+      "target": "ILGILI_KISI_BLOKLARI",
+      "joinWith": "\n\n",
       "cols": 3,
       "fields": [
         {
-          "key": "ADI_SOYADI_81FMB",
+          "suffix": "ADI_SOYADI",
           "label": "Adı Soyadı",
           "type": "text",
           "placeholder": "Adı Soyadı",
           "default": "—"
         },
         {
-          "key": "LETM_BLGS_12C2ZB",
+          "suffix": "ILETISIM",
           "label": "İletişim Bilgisi",
           "type": "text",
           "placeholder": "00000",
           "default": "—"
         },
         {
-          "key": "ADRES_BLGS_16U51S",
+          "suffix": "ADRES",
           "label": "Adresi",
           "type": "text",
           "tooltip": "Yaşadığı yerin adresini girin.",
           "default": "—"
         },
         {
-          "key": "STAT_27J9TG",
+          "suffix": "STATU",
           "label": "Statü",
           "type": "select",
           "search": true,
@@ -256,49 +245,11 @@ window.REPORT_FORM = {
             { "label": "Hiçbiri", "value": "[cb] MAĞDUR[color=#FFFFFF]___[/color][cb] TANIK" }
           ]
         }
-      ]
+      ],
+      "blockTemplate": "[table=#d0dade,white][tr]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2]ADI SOYADI\n{KISI_{{N}}_ADI_SOYADI}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2]İLETİŞİM BİLGİSİ [size=80](varsa)[/size]\n{KISI_{{N}}_ILETISIM}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,3,1][size=85][indent=2]ADRESİ [size=80](varsa)[/size]\n{KISI_{{N}}_ADRES}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2]STATÜ\n{KISI_{{N}}_STATU}[/indent][/size][/tdwidth][/table]"
     },
     {
-      "title": "İlgili Kişi (2)",
-      "cols": 3,
-      "fields": [
-        {
-          "key": "ADI_SOYADI_4M7IJ",
-          "label": "Adı Soyadı",
-          "type": "text",
-          "placeholder": "Adı Soyadı",
-          "default": "—"
-        },
-        {
-          "key": "LETM_BLGS_8K51V",
-          "label": "İletişim Bilgisi",
-          "type": "text",
-          "placeholder": "00000",
-          "default": "—"
-        },
-        {
-          "key": "ADRES_BLGS_12QKI8",
-          "label": "Adresi",
-          "type": "text",
-          "tooltip": "Yaşadığı yerin adresini girin.",
-          "default": "—"
-        },
-        {
-          "key": "STAT_39PY93",
-          "label": "Statü",
-          "type": "select",
-          "search": true,
-          "default": "[cb] MAĞDUR[color=#FFFFFF]___[/color][cb] TANIK",
-          "values": [
-            { "label": "Mağdur", "value": "[cbC] MAĞDUR[color=#FFFFFF]___[/color][cb] TANIK" },
-            { "label": "Tanık", "value": "[cb] MAĞDUR[color=#FFFFFF]___[/color][cbC] TANIK" },
-            { "label": "Hiçbiri", "value": "[cb] MAĞDUR[color=#FFFFFF]___[/color][cb] TANIK" }
-          ]
-        }
-      ]
-    },
-    {
-      "title": "Açıklama ve Süreç",
+      "title": "Açıklama",
       "cols": 3,
       "fields": [
         {
@@ -307,7 +258,8 @@ window.REPORT_FORM = {
           "type": "textarea",
           "rows": 8,
           "span": "all",
-          "tooltip": "Lütfen açıklama içerisinde sokak veya cadde adlarından sonra en az bir kere bölge adına atıfta bulunduğunuzdan emin olun (ör. Jamestown Street, Rancho veya West Mirror Drive, Mirror Park)."
+          "hideLabel": true,
+          "hint": "Lütfen açıklama içerisinde sokak veya cadde adlarından sonra en az bir kere bölge adına atıfta bulunduğunuzdan emin olun (ör. Jamestown Street, Rancho veya West Mirror Drive, Mirror Park)."
         },
         {
           "key": "G_KULLANILDI_46A850",
@@ -430,5 +382,5 @@ window.REPORT_FORM = {
       ]
     }
   ],
-  "template": "[table=#d0dade,white][tr]\n[tdwidth=#ffffff,#ffffff,top,left,2,1][/tdwidth]\n[tdwidth=#ffffff,#ffffff,top,left,12,1]\n[center][size=125]LOS SANTOS POLICE DEPARTMENT\n[b]OLAY RAPORU[/b][/size][/center][/tdwidth]\n[tdwidth=#ffffff,#ffffff,top,left,2,1][size=85][indent=2][b]RAPOR NO.[/b]\n26-{RAPOR_NO_148S5HW}[/indent][/size][/tdwidth]\n[/table]\n\n\n[table=#d0dade,white][tr]\n[tdwidth=#ffffff,#ffffff,top,left,2,1][b]PERSONEL BİLGİLERİ[/b]\n[table=#d0dade,white][tr]\n[tdwidth=#d0dade,#ffffff,top,left,3,1][size=85][indent=2]ADI SOYADI\n{ADI_SOYADI_14W7FR}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,1,1][size=85][indent=2]SERİ NO.\n{SER_NO_22H7AT}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,1,1][size=85][indent=2]DIVISION\n{DIVISION_12GSH2}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2]GÖREVLENDİRME\n{GREVLENDRME_219KDQ}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,1,1][size=85][indent=2]TARİH\n{TARH_17YUM7}[/indent][/size][/tdwidth][/table]\n\n[table=#d0dade,white][tr]\n[tdwidth=#ffffff,#ffffff,top,left,2,1][b]OLAY BİLGİLERİ[/b][/table]\n\n[table=#d0dade,white][tr]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2]TARİH ve SAAT\n{OLAY_TARIHI_VE_SAATI_132MZ65}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,4,1][size=85][indent=2]KONUM\n{OLAY_KONUMU_1383ZVF}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2]BÖLGE\n{BLGE_5U0WX}[/indent][/size][/tdwidth]\n[/table]\n\n[table=#d0dade,white][tr]\n[tdwidth=#d0dade,#ffffff,top,left,10,1][size=85][indent=2]OLAY TÜRÜ[/size]\n[size=85]{ARA_TAKIBI_4PFCW}[color=#FFFFFF]___[/color]{SILAHLI_SALDIRI_8EM9C}[color=#FFFFFF]___[/color]{CINAYET_12KQEB}[color=#FFFFFF]___[/color]{ETE_BALANTILI_16VQ5E}[color=#FFFFFF]___[/color]{NARKOTIK_201Q6T}[color=#FFFFFF]___[/color]{HIRSIZLIK_2443SO}[color=#FFFFFF]___[/color]{TRAFIK_KAZASI_28T5Y0}[color=#FFFFFF]___[/color]{DIER_337H01}[color=#FFFFFF]___[/color][/tdwidth][/table]\n\n[table=#d0dade,white][tr]\n[tdwidth=#ffffff,#ffffff,top,left,2,1][b]DETAYLAR[/b]\n[table=#d0dade,white][tr]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2]ADI SOYADI\n{ADI_SOYADI_81FMB}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2]İLETİŞİM BİLGİSİ [size=80](varsa)[/size]\n{LETM_BLGS_12C2ZB}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,3,1][size=85][indent=2]ADRESİ [size=80](varsa)[/size]\n{ADRES_BLGS_16U51S}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2]STATÜ\n{STAT_27J9TG}[/indent][/size][/tdwidth][/table]\n\n[table=#d0dade,white][tr]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2]ADI SOYADI\n{ADI_SOYADI_4M7IJ}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2]İLETİŞİM BİLGİSİ [size=80](varsa)[/size]\n{LETM_BLGS_8K51V}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,3,1][size=85][indent=2]ADRESİ [size=80](varsa)[/size]\n{ADRES_BLGS_12QKI8}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2]STATÜ\n{STAT_39PY93}[/indent][/size][/tdwidth][/table]\n\n[table=#d0dade,white][tr]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2]AÇIKLAMA\n{AIKLAMA_11KPDM}\n\n\n\n\n\n[/indent][/size][/tdwidth][/table]\n[table=#d0dade,white][tr]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2]KANITLAR\n[list]\n[*][url={1_KANIT_ERII_130EI6X}]{1_KANIT_BALII_114ISKZ}[/url]\n[*][url={2_KANIT_ERII_133V4BJ}]{2_KANIT_BALII_117C591}[/url]\n[*][url={3_KANIT_ERII_136WWUR}]{3_KANIT_BALII_121Q94V}[/url]\n[*][url={4_KANIT_ERII_139YYCO}]{4_KANIT_BALII_124Z0FL}[/url]\n[*][url={5_KANIT_ERII_142DY7M}]{5_KANIT_BALII_127TF57}[/url]\n[/list][/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2]SÜREÇ[/size]\n[size=85][list]\n[*] [{G_KULLANILDI_46A850}] Güç Kullanıldı\n[*] [{TUTUKLAMA_YAPILDI_50GA9S}] Tutuklama Yapıldı\n[*] [{TAKIP_SORUTURMASI_GEREKIYOR_541YNH}] Takip Soruşturması Gerekiyor\n[*] [{APB_5XJ9B}] APB Gerekiyor\n[*] [{SONULANDI_58ZH2F}] Sonuçlandı\n[/list][/tdwidth][/table]\n\n[/table][/tdwidth]\n\n[table=#d0dade,white][tr]\n[tdwidth=#ffffff,#ffffff,top,left,2,1][b]İDARİ BİLGİLER[/b]\n\n[table=#ffffff,white][tr]\n[tdwidth=#d0dade,#ffffff,top,left,5,1][size=85][indent=2]TAKİP SORUŞTURMASI[/size]\n[size=85][cb] DB:[color=#FFFFFF] X [/color][color=#FFFFFF]___[/color][cb] Traffic Division[color=#FFFFFF]___[/color][cb] Area GIT[color=#FFFFFF]___[/color][cb] Area Detective Division[color=#FFFFFF]___[/color][cb] Area Vice[color=#FFFFFF]___[/color][cb] Diğer: [color=#FFFFFF] X [/color][/tdwidth][/size][/table]\n\n[/tdwidth][/table]\n\n[table=#ffffff,white][tr]\n[tdwidth=#d0dade,#ffffff,middle,left,4,1][size=85][indent=2]FIELD SUPERVISOR İMZASI\n[color=#000000]A. SOYADI[/color][/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,middle,left,1,1][size=85][indent=2]SERİ NO.\n[color=#000000]00000[/color][/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,middle,left,4,1][size=85][indent=2]WATCH COMMANDER İMZASI\n[color=#000000]A. SOYADI[/color][/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,middle,left,1,1][size=85][indent=2]SERİ NO.\n[color=#000000]00000[/color][/indent][/size][/tdwidth][/table]\n[/tdwidth][/table]\n[size=75]Form 03.04.25 (01/25)[/size]"
+  "template": "[table=#d0dade,white][tr]\n[tdwidth=#ffffff,#ffffff,top,left,2,1][/tdwidth]\n[tdwidth=#ffffff,#ffffff,top,left,12,1]\n[center][size=125]LOS SANTOS POLICE DEPARTMENT\n[b]OLAY RAPORU[/b][/size][/center][/tdwidth]\n[tdwidth=#ffffff,#ffffff,top,left,2,1][size=85][indent=2][b]RAPOR NO.[/b]\n26-{RAPOR_NO_148S5HW}[/indent][/size][/tdwidth]\n[/table]\n\n\n[table=#d0dade,white][tr]\n[tdwidth=#ffffff,#ffffff,top,left,2,1][b]PERSONEL BİLGİLERİ[/b]\n[table=#d0dade,white][tr]\n[tdwidth=#d0dade,#ffffff,top,left,3,1][size=85][indent=2]ADI SOYADI\n{ADI_SOYADI_14W7FR}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,1,1][size=85][indent=2]SERİ NO.\n{SER_NO_22H7AT}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,1,1][size=85][indent=2]DIVISION\n{DIVISION_12GSH2}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2]GÖREVLENDİRME\n{GREVLENDRME_219KDQ}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,1,1][size=85][indent=2]TARİH\n{TARH_17YUM7}[/indent][/size][/tdwidth][/table]\n\n[table=#d0dade,white][tr]\n[tdwidth=#ffffff,#ffffff,top,left,2,1][b]OLAY BİLGİLERİ[/b][/table]\n\n[table=#d0dade,white][tr]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2]TARİH ve SAAT\n{OLAY_TARIHI_VE_SAATI_132MZ65}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,4,1][size=85][indent=2]KONUM\n{OLAY_KONUMU_1383ZVF}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2]BÖLGE\n{BLGE_5U0WX}[/indent][/size][/tdwidth]\n[/table]\n\n[table=#d0dade,white][tr]\n[tdwidth=#d0dade,#ffffff,top,left,10,1][size=85][indent=2]OLAY TÜRÜ[/size]\n[size=85]{ARA_TAKIBI_4PFCW}[color=#FFFFFF]___[/color]{SILAHLI_SALDIRI_8EM9C}[color=#FFFFFF]___[/color]{CINAYET_12KQEB}[color=#FFFFFF]___[/color]{ETE_BALANTILI_16VQ5E}[color=#FFFFFF]___[/color]{NARKOTIK_201Q6T}[color=#FFFFFF]___[/color]{HIRSIZLIK_2443SO}[color=#FFFFFF]___[/color]{TRAFIK_KAZASI_28T5Y0}[color=#FFFFFF]___[/color]{DIER_337H01}[color=#FFFFFF]___[/color][/tdwidth][/table]\n\n[table=#d0dade,white][tr]\n[tdwidth=#ffffff,#ffffff,top,left,2,1][b]DETAYLAR[/b]\n{ILGILI_KISI_BLOKLARI}\n\n[table=#d0dade,white][tr]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2]AÇIKLAMA\n{AIKLAMA_11KPDM}\n\n\n\n\n\n[/indent][/size][/tdwidth][/table]\n[table=#d0dade,white][tr]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2]KANITLAR\n[list]\n[*][url={1_KANIT_ERII_130EI6X}]{1_KANIT_BALII_114ISKZ}[/url]\n[*][url={2_KANIT_ERII_133V4BJ}]{2_KANIT_BALII_117C591}[/url]\n[*][url={3_KANIT_ERII_136WWUR}]{3_KANIT_BALII_121Q94V}[/url]\n[*][url={4_KANIT_ERII_139YYCO}]{4_KANIT_BALII_124Z0FL}[/url]\n[*][url={5_KANIT_ERII_142DY7M}]{5_KANIT_BALII_127TF57}[/url]\n[/list][/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2]SÜREÇ[/size]\n[size=85][list]\n[*] [{G_KULLANILDI_46A850}] Güç Kullanıldı\n[*] [{TUTUKLAMA_YAPILDI_50GA9S}] Tutuklama Yapıldı\n[*] [{TAKIP_SORUTURMASI_GEREKIYOR_541YNH}] Takip Soruşturması Gerekiyor\n[*] [{APB_5XJ9B}] APB Gerekiyor\n[*] [{SONULANDI_58ZH2F}] Sonuçlandı\n[/list][/tdwidth][/table]\n\n[/table][/tdwidth]\n\n[table=#d0dade,white][tr]\n[tdwidth=#ffffff,#ffffff,top,left,2,1][b]İDARİ BİLGİLER[/b]\n\n[table=#ffffff,white][tr]\n[tdwidth=#d0dade,#ffffff,top,left,5,1][size=85][indent=2]TAKİP SORUŞTURMASI[/size]\n[size=85][cb] DB:[color=#FFFFFF] X [/color][color=#FFFFFF]___[/color][cb] Traffic Division[color=#FFFFFF]___[/color][cb] Area GIT[color=#FFFFFF]___[/color][cb] Area Detective Division[color=#FFFFFF]___[/color][cb] Area Vice[color=#FFFFFF]___[/color][cb] Diğer: [color=#FFFFFF] X [/color][/tdwidth][/size][/table]\n\n[/tdwidth][/table]\n\n[table=#ffffff,white][tr]\n[tdwidth=#d0dade,#ffffff,middle,left,4,1][size=85][indent=2]FIELD SUPERVISOR İMZASI\n[color=#000000]A. SOYADI[/color][/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,middle,left,1,1][size=85][indent=2]SERİ NO.\n[color=#000000]00000[/color][/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,middle,left,4,1][size=85][indent=2]WATCH COMMANDER İMZASI\n[color=#000000]A. SOYADI[/color][/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,middle,left,1,1][size=85][indent=2]SERİ NO.\n[color=#000000]00000[/color][/indent][/size][/tdwidth][/table]\n[/tdwidth][/table]\n[size=75]Form 03.04.25 (01/25)[/size]"
 };

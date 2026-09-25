@@ -3,14 +3,19 @@
  * and this script builds the form, fills officer fields from the active character, and turns the
  * answers into the report (copy as HTML, copy title, download as image).
  *
- * Field types: text, number (min, max), select, date (dd/MM/yyyy), time (HH:mm), textarea,
+ * Field types: text, number (min, max), select, date (dd/MM/yyyy), time (HH:mm), textarea, checkbox
+ *              (single checkbox; get() returns f.onValue when checked, f.offValue otherwise — no
+ *              separate label row, no required-star, no hint row),
  *              charges (penal code picker that writes article numbers into f.target).
  * Field options: key, label, placeholder, hint, tooltip, values [{label, value}], default,
  *                upper ('en' | 'tr'), span ('all'), prefill ('name' | 'badge' | 'division'), search (true),
  *                ids / ranges / types / target / typeTargets / typeOn / typeOff / classify (charges only),
- *                locked (select, text), today (date: starts with the computer's date).
+ *                locked (select, text), today (date: starts with the computer's date), onValue / offValue
+ *                (checkbox only), hideLabel (skips the label row entirely — e.g. when the section title
+ *                already says it, as with a single big textarea).
  * default on a text/textarea field sets its starting value (e.g. "—" for an optional field); the
- * user can still edit or clear it, and it counts as filled for the required-field check.
+ * user can still edit or clear it, and it counts as filled for the required-field check. default on a
+ * checkbox (truthy) starts it checked.
  * Top-level def.outputFormat: 'bbcode' outputs the template with raw values (no HTML-escaping, no
  *                              newline-to-<br> conversion); anything else (default) outputs HTML.
  * Charges-only options: ids/ranges narrow the list by article number, types narrows it by penal
@@ -20,6 +25,16 @@
  *                        chosen article to a key into typeTargets, overriding the default (the
  *                        article's own type letter) — used to split "I" into separate boxes by
  *                        article range.
+ * Repeatable groups: a def.sections entry with group:true (key, label, min, max, target, blockTemplate,
+ *                     joinWith, addLabel, cols, fields) renders `min` panels titled "label (n)" plus a
+ *                     "+ label Ekle" button (up to `max`); only instances past `min` can be removed, and
+ *                     only the last one (so numbering never has gaps). Its `fields` use {suffix, ...}
+ *                     instead of {key, ...} — each instance n gets its own control keyed
+ *                     `${key}_${n}_${suffix}`. blockTemplate is a single instance's chunk of the output,
+ *                     written with literal "{{N}}" where the instance number goes (e.g.
+ *                     "{KISI_{{N}}_ADI_SOYADI}"); at generate time every instance's filled blockTemplate
+ *                     is joined with joinWith (default "\n\n") and substituted into the main template at
+ *                     {target}.
  * Template placeholders: {KEY}.
  */
 (function () {
@@ -45,6 +60,7 @@
   }
 
   var controls = {};   // key -> { get(), set(v), field }
+  var groups = [];      // repeatable field groups (def.sections entries with group:true)
   var form = document.getElementById('report-form');
 
   /* ---------- Custom select (same look as the settings page, optional search box) ---------- */
@@ -223,26 +239,46 @@
   }
 
   /* ---------- Build the form ---------- */
-  def.sections.forEach(function (section, si) {
-    var panel = el('section', { class: 'panel form-panel', 'aria-labelledby': 'sec-' + si });
-    panel.appendChild(el('h2', { id: 'sec-' + si }, esc(section.title)));
-    var grid = el('div', { class: 'field-grid' + (section.cols === 3 ? ' cols-3' : '') });
-    section.fields.forEach(function (f) {
-      var id = 'f-' + f.key, labelId = id + '-label';
-      var wrap = el('div', { class: 'field' + (f.span === 'all' ? ' span-all' : '') });
+  /* Builds one field's DOM + control. Does not register it into `controls` or append it anywhere;
+   * callers (a plain section, or a repeatable group instance) do that themselves. */
+  function buildField(f) {
+    var id = 'f-' + f.key, labelId = id + '-label';
+
+    if (f.type === 'checkbox') {
+      var cbWrap = el('div', { class: 'field checkbox-field' + (f.span === 'all' ? ' span-all' : '') });
+      var cb = el('input', { type: 'checkbox', id: id, class: 'checkbox-input' });
+      if (f.default) cb.checked = true;
+      var cbLabel = el('label', { for: id, class: 'checkbox-label' });
+      cbLabel.appendChild(cb);
+      cbLabel.appendChild(document.createTextNode(f.label));
+      cbWrap.appendChild(cbLabel);
+      cb.addEventListener('change', scheduleAuto);
+      return {
+        wrap: cbWrap,
+        ctrl: {
+          get: function () { return cb.checked ? f.onValue : f.offValue; },
+          set: function (v) { cb.checked = v === f.onValue; },
+          focusEl: cb,
+        },
+      };
+    }
+
+    var wrap = el('div', { class: 'field' + (f.span === 'all' ? ' span-all' : '') });
+    if (!f.hideLabel) {
       var labelRow = el('div', { class: 'label-row' });
       labelRow.appendChild(el('label', { id: labelId, for: f.type === 'select' || f.type === 'charges' ? null : id }, esc(f.label) + (f.locked || !def.required ? '' : '<span class="req" aria-hidden="true">*</span>')));
       if (f.tooltip) labelRow.appendChild(el('span', { class: 'help', tabindex: '0', 'aria-label': f.tooltip }, HELP + '<span class="tip" role="tooltip">' + esc(f.tooltip) + '</span>'));
       wrap.appendChild(labelRow);
+    }
 
-      var ctrl;
-      if (f.type === 'charges') {
-        ctrl = buildCharges(f, labelId);
-        wrap.appendChild(ctrl.node);
-      } else if (f.type === 'select') {
-        ctrl = buildSelect(f, labelId);
-        wrap.appendChild(ctrl.node);
-      } else {
+    var ctrl;
+    if (f.type === 'charges') {
+      ctrl = buildCharges(f, labelId);
+      wrap.appendChild(ctrl.node);
+    } else if (f.type === 'select') {
+      ctrl = buildSelect(f, labelId);
+      wrap.appendChild(ctrl.node);
+    } else {
         var input = f.type === 'textarea'
           ? el('textarea', {
               class: 'input plain', id: id, rows: f.rows || 6, placeholder: f.placeholder || null,
@@ -302,12 +338,100 @@
           wrap.appendChild(input);
         }
         ctrl = { get: function () { return input.value; }, set: function (v) { input.value = v || ''; }, focusEl: input, input: input };
+    }
+    if (f.hint) wrap.appendChild(el('p', { class: 'hint' }, esc(f.hint)));
+    return { wrap: wrap, ctrl: ctrl };
+  }
+
+  /* ---------- Repeatable field group (e.g. "İlgili Kişi (1)", "(2)", + "Kişi Ekle") ----------
+   * section.fields use {suffix, ...} instead of {key, ...}; each instance n gets its own control
+   * keyed section.key + '_' + n + '_' + suffix. section.blockTemplate is a per-instance BBCode/HTML
+   * chunk using {KEY_{{N}}_SUFFIX}-style placeholders (literal "{{N}}"), joined with section.joinWith
+   * and written into the main template at {section.target} when the report is generated. */
+  function buildGroupSection(section) {
+    var container = el('div', { class: 'group-section' });
+    form.appendChild(container);
+    var count = section.min;
+    var panels = [];   // { node, removeBtn }
+    var addBtn = el('button', { type: 'button', class: 'btn' }, PLUS + (section.addLabel || (section.label + ' Ekle')));
+    var addWrap = el('div', { class: 'form-actions group-add' });
+    addWrap.appendChild(addBtn);
+
+    function fieldDefsFor(n) {
+      return section.fields.map(function (f) {
+        var copy = {};
+        for (var k in f) copy[k] = f[k];
+        copy.key = section.key + '_' + n + '_' + f.suffix;
+        return copy;
+      });
+    }
+    function refreshRemovable() {
+      panels.forEach(function (p, idx) {
+        var n = idx + 1;
+        if (p.removeBtn) p.removeBtn.style.display = (n === count && n > section.min) ? '' : 'none';
+      });
+      addWrap.style.display = count >= section.max ? 'none' : '';
+    }
+    function buildInstance(n) {
+      var panel = el('section', { class: 'panel form-panel' });
+      var headRow = el('div', { class: 'group-head' });
+      headRow.appendChild(el('h2', {}, esc(section.label) + ' (' + n + ')'));
+      var removeBtn = null;
+      if (n > section.min) {
+        removeBtn = el('button', { type: 'button', class: 'btn icon-btn', 'aria-label': 'Kaldır', title: 'Kaldır' }, TRASH);
+        removeBtn.addEventListener('click', function () {
+          section.fields.forEach(function (f) { delete controls[section.key + '_' + n + '_' + f.suffix]; });
+          panel.remove();
+          panels.pop();
+          count--;
+          refreshRemovable();
+          scheduleAuto();
+        });
+        headRow.appendChild(removeBtn);
       }
-      if (f.hint) wrap.appendChild(el('p', { class: 'hint' }, esc(f.hint)));
-      ctrl.field = f;
-      ctrl.wrap = wrap;
-      controls[f.key] = ctrl;
-      grid.appendChild(wrap);
+      panel.appendChild(headRow);
+      var grid = el('div', { class: 'field-grid' + (section.cols === 3 ? ' cols-3' : '') });
+      fieldDefsFor(n).forEach(function (f) {
+        var built = buildField(f);
+        built.ctrl.field = f;
+        built.ctrl.wrap = built.wrap;
+        controls[f.key] = built.ctrl;
+        grid.appendChild(built.wrap);
+      });
+      panel.appendChild(grid);
+      return { node: panel, removeBtn: removeBtn };
+    }
+
+    for (var i = 1; i <= section.min; i++) {
+      var inst = buildInstance(i);
+      panels.push(inst);
+      container.appendChild(inst.node);
+    }
+    container.appendChild(addWrap);
+    refreshRemovable();
+    addBtn.addEventListener('click', function () {
+      count++;
+      var inst = buildInstance(count);
+      panels.push(inst);
+      container.insertBefore(inst.node, addWrap);
+      refreshRemovable();
+      scheduleAuto();
+    });
+
+    groups.push({ def: section, getCount: function () { return count; } });
+  }
+
+  def.sections.forEach(function (section, si) {
+    if (section.group) { buildGroupSection(section); return; }
+    var panel = el('section', { class: 'panel form-panel', 'aria-labelledby': 'sec-' + si });
+    panel.appendChild(el('h2', { id: 'sec-' + si }, esc(section.title)));
+    var grid = el('div', { class: 'field-grid' + (section.cols === 3 ? ' cols-3' : '') });
+    section.fields.forEach(function (f) {
+      var built = buildField(f);
+      built.ctrl.field = f;
+      built.ctrl.wrap = built.wrap;
+      controls[f.key] = built.ctrl;
+      grid.appendChild(built.wrap);
     });
     panel.appendChild(grid);
     form.appendChild(panel);
@@ -470,7 +594,13 @@
     if (def.required && !validate()) return;
     if (!checkRanges()) return;
     var vals = values();
-    output = fill(def.template, vals, def.outputFormat !== 'bbcode');
+    var htmlMode = def.outputFormat !== 'bbcode';
+    groups.forEach(function (g) {
+      var n = g.getCount(), blocks = [];
+      for (var i = 1; i <= n; i++) blocks.push(fill(g.def.blockTemplate.replace(/\{\{N\}\}/g, i), vals, htmlMode));
+      vals[g.def.target] = blocks.join(g.def.joinWith != null ? g.def.joinWith : '\n\n');
+    });
+    output = fill(def.template, vals, htmlMode);
     if (titleInput) titleInput.value = fill(def.titleTemplate || '', vals, false);
     var code = document.getElementById('result-code');
     if (code) code.value = output;

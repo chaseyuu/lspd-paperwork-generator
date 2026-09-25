@@ -8,6 +8,18 @@
 .field .label-row label { margin: 0; }
 .field .hint { margin-top: 6px; font-size: .75rem; color: var(--muted-foreground); }
 
+/* Single checkbox field (e.g. Olay Türü) */
+.checkbox-field { display: flex; align-items: center; }
+.checkbox-label { display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer; font-size: .875rem; }
+.checkbox-input { width: 18px; height: 18px; accent-color: var(--primary); cursor: pointer; flex: none; }
+
+/* Repeatable field group (e.g. İlgili Kişi) */
+.group-section { display: flex; flex-direction: column; gap: 20px; }
+.group-section .panel { margin-bottom: 0; }
+.group-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 16px; }
+.group-head h2 { margin: 0; }
+.group-add { justify-content: flex-start; margin-top: 0; }
+
 /* Required fields */
 .req { margin-left: 3px; color: hsl(38 92% 50%); }
 .field.invalid .input, .field.invalid .select-trigger {
