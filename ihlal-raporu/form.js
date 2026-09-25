@@ -374,7 +374,7 @@ window.REPORT_FORM = {
     return t + "'" + locative(t);
   }
 
-  // "YAIR MONTANEZ" -> "Yair Montanez"
+  // "JONATHAN MENDEZ" -> "Jonathan Mendez"
   function titleCase(v) {
     return String(v || '').trim().toLocaleLowerCase('en-US').replace(/(^|[\s\-'])(\S)/g, function (m, sep, ch) {
       return sep + ch.toLocaleUpperCase('en-US');
