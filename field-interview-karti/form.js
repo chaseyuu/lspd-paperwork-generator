@@ -68,6 +68,7 @@ window.REPORT_FORM = {
           "search": true,
           "placeholder": "Seçim Yapın",
           "tooltip": "FI Kartlarının temel amacı, doğru bilgileri kayıt etmektir. Memurlar hiçbir şekilde kişisel düşüncelerini veya fikirlerini kayıt etmeyeceklerdir.",
+          "default": "[cb] Mağdur [color=#FFFFFF]___[/color][cb] Tanık [color=#FFFFFF]___[/color][cb] Evsiz [color=#FFFFFF]___[/color][cb] Çete Aktivitesi [color=#FFFFFF]___[/color][cb] Şartlı Tahliyede [color=#FFFFFF]___[/color][cb] Denetimli Serbestlik [color=#FFFFFF]___[/color][cb] Sicil Kaydı Bulunuyor",
           "values": [
             {
               "label": "Mağdur",
