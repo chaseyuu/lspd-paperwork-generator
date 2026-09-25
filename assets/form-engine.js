@@ -199,18 +199,29 @@
     var options = chargeOptions(f);
     var root = el('div', { class: 'charges' });
     var rowsEl = el('div', { class: 'charge-rows' });
-    var add = el('button', { type: 'button', class: 'btn' }, PLUS + 'İhlal Ekle');
+    var add = el('button', { type: 'button', class: 'btn' }, PLUS + (f.addLabel || 'İhlal Ekle'));
     root.appendChild(rowsEl); root.appendChild(add);
     var rows = [];
 
     function sync() {
-      var seen = [];
+      // f.countDuplicates (e.g. Tutuklama Raporu) keeps a per-article tally and writes
+      // "003 (x2), 101" instead of silently collapsing repeats to a bare unique list.
+      var order = [];
+      var counts = {};
       rows.forEach(function (r) {
         var n = r.select.get().replace(/[^0-9]/g, '');
-        if (n && seen.indexOf(n) < 0) seen.push(n);
+        if (!n) return;
+        if (!(n in counts)) { counts[n] = 0; order.push(n); }
+        counts[n]++;
       });
       var target = controls[f.target];
-      if (target) { target.set(seen.join(', ')); if (target.input) delete target.input.dataset.autofill; }
+      if (target) {
+        var text = f.countDuplicates
+          ? order.map(function (n) { return counts[n] > 1 ? n + ' (x' + counts[n] + ')' : n; }).join(', ')
+          : order.join(', ');
+        target.set(text);
+        if (target.input) delete target.input.dataset.autofill;
+      }
       // Tick the offence type boxes (e.g. Infraction / Misdemeanor / Felony) from the chosen charges.
       // f.classify(option) may override the plain option.type -> key mapping (e.g. to split
       // Infraction into Trafik / Trafik Dışı by article number for the İhlal Raporu).

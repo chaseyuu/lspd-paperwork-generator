@@ -144,7 +144,9 @@ window.REPORT_FORM = {
           "label": "Kanunlar",
           "type": "charges",
           "span": "all",
-          "target": "CEZA_KANUNU_97NVWS"
+          "target": "CEZA_KANUNU_97NVWS",
+          "addLabel": "Suçlama Ekle",
+          "countDuplicates": true
         },
         {
           "key": "CEZA_KANUNU_97NVWS",
