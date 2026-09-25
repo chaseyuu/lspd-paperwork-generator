@@ -775,9 +775,13 @@
     });
     return out;
   }
-  function fill(template, vals, html) {
+  function fill(template, vals, html, rawKeys) {
     return template.replace(/\{([A-Z0-9_]+)\}/g, function (m, key) {
       if (!(key in vals)) return m;
+      // A group's target (e.g. KANIT_LISTESI) already holds fully-escaped HTML built by
+      // filling each instance's blockTemplate below — re-escaping it here would turn its
+      // "<li>" tags into visible text, so rawKeys marks it to pass through untouched.
+      if (html && rawKeys && rawKeys[key]) return vals[key];
       return html ? esc(vals[key]).replace(/\r?\n/g, '<br>') : vals[key];
     });
   }
@@ -871,12 +875,14 @@
     if (!checkRanges()) return;
     var vals = values();
     var htmlMode = def.outputFormat !== 'bbcode';
+    var rawKeys = {};
     groups.forEach(function (g) {
       var n = g.getCount(), blocks = [];
       for (var i = 1; i <= n; i++) blocks.push(fill(g.def.blockTemplate.replace(/\{\{N\}\}/g, i), vals, htmlMode));
       vals[g.def.target] = blocks.join(g.def.joinWith != null ? g.def.joinWith : '\n\n');
+      rawKeys[g.def.target] = true;
     });
-    output = fill(def.template, vals, htmlMode);
+    output = fill(def.template, vals, htmlMode, rawKeys);
     if (titleInput) titleInput.value = fill(def.titleTemplate || '', vals, false);
     var code = document.getElementById('result-code');
     if (code) code.value = output;
