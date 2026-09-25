@@ -308,7 +308,6 @@ window.REPORT_FORM = {
           "label": "Ceza Kanunu",
           "type": "text",
           "placeholder": "401, 410",
-          "hint": "San Andreas Ceza Kanununa göre ihlal edilen kanunların kodlarını yazın.",
           "locked": true,
           "lockedTitle": "Seçilen kanunlara göre otomatik doldurulur."
         },
@@ -330,8 +329,7 @@ window.REPORT_FORM = {
           "type": "number",
           "min": 1,
           "max": 30,
-          "placeholder": "1-30",
-          "hint": "1 ile 30 arasında bir değer girin."
+          "placeholder": "1-30"
         },
         {
           "key": "AIKLAMA_21HVEH",
