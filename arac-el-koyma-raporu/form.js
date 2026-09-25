@@ -220,10 +220,18 @@ window.REPORT_FORM = {
         {
           "key": "CNSYET_306FE08",
           "label": "CİNSİYETİ",
-          "type": "text",
-          "placeholder": "E/K",
-          "hint": "Büyük harflerle yazın.",
-          "upper": "en"
+          "type": "select",
+          "placeholder": "Seçim Yapın",
+          "values": [
+            {
+              "label": "Erkek",
+              "value": "E"
+            },
+            {
+              "label": "Kadın",
+              "value": "K"
+            }
+          ]
         },
         {
           "key": "KKEN_394JO84",
