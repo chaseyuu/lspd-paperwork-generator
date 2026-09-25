@@ -54,6 +54,7 @@
   var PLUS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>';
   var LOCK = '<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
   var HELP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>';
+  var CLIPBOARD = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>';
 
   function esc(s) {
     return String(s).replace(/[&<>"']/g, function (c) {
@@ -274,6 +275,31 @@
           focusEl: cb,
         },
       };
+    }
+
+    if (f.type === 'copylist') {
+      // Reference text, not a real input: not registered under any key, never validated, never
+      // saved in a draft, never written to the report. Each line gets its own quiet copy-to-
+      // clipboard button (no status toast — the click itself is the only feedback, via the icon
+      // briefly turning into a checkmark).
+      var clWrap = el('div', { class: 'field copylist span-all' });
+      if (f.intro) clWrap.appendChild(el('p', { class: 'copylist-intro' }, esc(f.intro)));
+      var clList = el('ul', { class: 'copylist-items' });
+      (f.items || []).forEach(function (text) {
+        var li = el('li', { class: 'copylist-item' });
+        li.appendChild(el('span', {}, esc(text)));
+        var copyBtn = el('button', { type: 'button', class: 'btn icon-btn copylist-copy', 'aria-label': 'Kopyala', title: 'Kopyala' }, CLIPBOARD);
+        copyBtn.addEventListener('click', function () {
+          copy(text).then(function () {
+            copyBtn.innerHTML = CHECK;
+            setTimeout(function () { copyBtn.innerHTML = CLIPBOARD; }, 900);
+          });
+        });
+        li.appendChild(copyBtn);
+        clList.appendChild(li);
+      });
+      clWrap.appendChild(clList);
+      return { wrap: clWrap, ctrl: { get: function () { return ''; }, set: function () {}, focusEl: null, noOutput: true } };
     }
 
     var wrap = el('div', { class: 'field' + (f.span === 'all' ? ' span-all' : '') });
@@ -602,7 +628,7 @@
       var built = buildField(f);
       built.ctrl.field = f;
       built.ctrl.wrap = built.wrap;
-      controls[f.key] = built.ctrl;
+      if (f.key) controls[f.key] = built.ctrl;   // a copylist field has no key — nothing to register
       grid.appendChild(built.wrap);
     });
     panel.appendChild(grid);
@@ -769,7 +795,7 @@
     var first = null;
     Object.keys(controls).forEach(function (key) {
       var c = controls[key];
-      if (c.field.locked) return;   // filled from another field, which shows the error
+      if (c.field.locked || c.noOutput) return;   // filled from another field / not a real input
       var empty = !String(c.get() || '').trim();
       c.wrap.classList.toggle('invalid', empty);
       var msg = c.wrap.querySelector('.error-msg');

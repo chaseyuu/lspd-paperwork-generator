@@ -184,6 +184,18 @@ textarea.code-box {
 .code-badge.type-I { background: #22c55e; }
 .select-list { max-height: 320px; }
 
+/* Static reference text with per-line silent copy buttons */
+.copylist { display: flex; flex-direction: column; gap: 10px; }
+.copylist-intro { margin: 0; font-size: .8125rem; color: var(--muted-foreground); }
+.copylist-items { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.copylist-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--muted, transparent);
+}
+.copylist-item span { font-size: .875rem; line-height: 1.4; }
+.copylist-copy { width: 32px; height: 32px; }
+.copylist-copy svg { width: 16px; height: 16px; }
+
 @media (max-width: 900px) {
   .field-grid.cols-3 { grid-template-columns: 1fr; }
 }
