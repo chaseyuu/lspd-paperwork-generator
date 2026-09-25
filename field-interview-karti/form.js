@@ -3,7 +3,6 @@ window.REPORT_FORM = {
   "emptyValue": "—",
   "title": "Field Interview Kartı",
   "titleTemplate": "{ADI_SOYADI_1593E71} - {TARIH_89ZX5M}",
-  "required": true,
   "outputFormat": "bbcode",
   "sections": [
     {
