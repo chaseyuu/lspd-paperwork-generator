@@ -196,6 +196,7 @@ window.REPORT_FORM = {
           "label": "Görevlendirme",
           "type": "select",
           "search": true,
+          "prefill": "assignment",
           "values": [
             { "label": "Adam", "value": "A" },
             { "label": "Desk Officer", "value": "DESK" },
