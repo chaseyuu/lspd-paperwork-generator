@@ -39,10 +39,10 @@ ifadeleri formdaki değerlerle değiştirilir. Formu ekrana çizen ve raporu olu
 - İhlal Raporu'nda **Kanunlar** menüsü yalnızca Infraction ve Misdemeanor türündeki maddeleri listeler
   (Felony maddeleri bu raporda seçilemez). Misdemeanor maddeler ayrıca 400–699 aralığı ile 110, 117,
   118, 119a, 119b, 125, 137 ve 138 maddeleriyle sınırlıdır; bu aralık ve listenin dışındaki
-  Misdemeanor maddeler menüde görünmez. İhlal Türü kutucukları (Trafik, Trafik Dışı, Misdemeanor)
-  seçilen maddelere göre otomatik işaretlenir: 400–444 aralığındaki bir Infraction madde **Trafik**,
-  bu aralık dışındaki bir Infraction madde **Trafik Dışı**, herhangi bir Misdemeanor madde ise
-  **Misdemeanor** kutucuğunu işaretler. İhlal Raporu'ndaki **Açıklama** alanı, Araç El Koyma
+  Misdemeanor maddeler menüde görünmez. **Trafik** ve **Trafik Dışı** kutucukları elle işaretlenir
+  (kilitli değildir); **Misdemeanor** kutucuğu ise kilitlidir ve yalnızca seçilen kanunlara göre
+  otomatik işaretlenir: herhangi bir Misdemeanor madde seçildiğinde işaretlenir. İhlal Raporu'ndaki
+  **Açıklama** alanı, Araç El Koyma
   Formu'ndan farklı olarak elle yazılır; canlı otomatik yazım burada yoktur. İhlal Raporu'nun sonuç
   ekranında Araç El Koyma Formu'ndaki gibi bir rapor başlığı çıktısı yoktur; yalnızca raporun kaynak
   kodu gösterilir.
