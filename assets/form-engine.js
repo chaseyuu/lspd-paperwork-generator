@@ -7,7 +7,7 @@
  *              charges (penal code picker that writes article numbers into f.target).
  * Field options: key, label, placeholder, hint, tooltip, values [{label, value}], default,
  *                upper ('en' | 'tr'), span ('all'), prefill ('name' | 'badge' | 'division'), search (true),
- *                ids / ranges / target (charges only).
+ *                ids / ranges / target / typeTargets / typeOn / typeOff (charges only), locked (select).
  * Template placeholders: {KEY}.
  */
 (function () {
@@ -17,6 +17,7 @@
   var SEARCH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>';
   var TRASH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
   var PLUS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>';
+  var LOCK = '<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
   var HELP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>';
 
   function esc(s) {
@@ -39,7 +40,7 @@
     return String(t).toLocaleLowerCase('tr-TR').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ı/g, 'i');
   }
   function buildSelect(f, labelId) {
-    var root = el('div', { class: 'select plain' });
+    var root = el('div', { class: 'select plain' + (f.locked ? ' locked' : '') });
     // Selection is kept by position so two options may share a value (e.g. Lincoln / Other Units = O).
     var sel = -1;
     var trigger = el('button', { type: 'button', class: 'select-trigger', 'aria-haspopup': 'listbox', 'aria-expanded': 'false', 'aria-labelledby': labelId });
@@ -64,7 +65,7 @@
     }
     function render() {
       var opt = sel >= 0 ? f.values[sel] : null;
-      trigger.innerHTML = (opt ? '<span class="opt"></span>' : '<span class="placeholder"></span>') + CHEVRON;
+      trigger.innerHTML = (opt ? '<span class="opt"></span>' : '<span class="placeholder"></span>') + (f.locked ? LOCK : CHEVRON);
       if (opt && opt.html) trigger.firstChild.innerHTML = opt.html;
       else trigger.firstChild.textContent = opt ? opt.label : (f.placeholder || '');
       list.querySelectorAll('li').forEach(function (li) { li.setAttribute('aria-selected', String(Number(li.getAttribute('data-index')) === sel)); });
@@ -113,8 +114,13 @@
         var it = visible()[active]; if (it) { pick(it); close(); }
       } else if (e.key === 'Escape') { close(); trigger.focus(); }
     }
-    trigger.addEventListener('click', function () { root.classList.contains('open') ? close() : open(); });
-    trigger.addEventListener('keydown', onKey);
+    if (f.locked) {
+      trigger.disabled = true;
+      if (f.lockedTitle) root.title = f.lockedTitle;
+    } else {
+      trigger.addEventListener('click', function () { root.classList.contains('open') ? close() : open(); });
+      trigger.addEventListener('keydown', onKey);
+    }
     if (search) {
       search.addEventListener('input', filter);
       search.addEventListener('keydown', onKey);
@@ -136,6 +142,7 @@
     }).map(function (c) {
       return {
         value: c.id,
+        type: c.type,
         label: c.id + ' ' + c.charge,
         html: '<span class="code-badge type-' + esc(c.type) + '">' + esc(c.id) + '</span><span class="opt-text">' + esc(c.charge) + '</span>',
       };
@@ -157,6 +164,16 @@
       });
       var target = controls[f.target];
       if (target) { target.set(seen.join(', ')); if (target.input) delete target.input.dataset.autofill; }
+      // Tick the offence type boxes (Infraction / Misdemeanor / Felony) from the chosen charges.
+      var types = {};
+      rows.forEach(function (r) {
+        var id = r.select.get();
+        options.forEach(function (o) { if (o.value === id) types[o.type] = true; });
+      });
+      Object.keys(f.typeTargets || {}).forEach(function (type) {
+        var t = controls[f.typeTargets[type]];
+        if (t) t.set(types[type] ? f.typeOn : f.typeOff);
+      });
     }
     function addRow(focus) {
       var row = el('div', { class: 'charge-row' });

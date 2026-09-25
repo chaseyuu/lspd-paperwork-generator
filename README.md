@@ -21,6 +21,8 @@ ifadeleri formdaki değerlerle değiştirilir. Formu ekrana çizen ve raporu olu
 - **Suçlama** alanı Tutuklama Hesaplayıcı'daki suçlama menüsünün aynısıdır (`assets/penal-code.js`).
   Araç El Koyma Formu'nda 115 ve 400–500 arasındaki maddeler listelenir; **Suçlama Ekle** ile birden fazla
   madde seçilebilir. Seçilen maddelerin yalnızca numaraları Ceza Kanunu alanına `401, 410` biçiminde yazılır.
+- İhlal Türü kutucukları (Infraction, Misdemeanor, Felony) seçilen suçlamaların türüne göre otomatik
+  işaretlenir ve elle değiştirilemez.
 - **Formu Düzenle** girilen bilgiler kaybolmadan forma geri döner.
 - Personel Bilgisi, Seri No. ve Division alanları sağ üstte seçili karakterin bilgileriyle otomatik doldurulur.
   Karakter değiştirildiğinde bu alanlar da güncellenir; elle değiştirilen bir alana dokunulmaz.

@@ -21,7 +21,9 @@ window.REPORT_FORM = {
               "value": "☐"
             }
           ],
-          "default": "☐"
+          "default": "☐",
+          "locked": true,
+          "lockedTitle": "Seçilen suçlamalara göre otomatik belirlenir."
         },
         {
           "key": "MISDEMEANOR_80TIL",
@@ -37,7 +39,9 @@ window.REPORT_FORM = {
               "value": "☐"
             }
           ],
-          "default": "☐"
+          "default": "☐",
+          "locked": true,
+          "lockedTitle": "Seçilen suçlamalara göre otomatik belirlenir."
         },
         {
           "key": "FELONY_127SK8",
@@ -53,7 +57,9 @@ window.REPORT_FORM = {
               "value": "☐"
             }
           ],
-          "default": "☐"
+          "default": "☐",
+          "locked": true,
+          "lockedTitle": "Seçilen suçlamalara göre otomatik belirlenir."
         }
       ]
     },
@@ -250,7 +256,14 @@ window.REPORT_FORM = {
               500
             ]
           ],
-          "target": "CEZA_KANUNU_493TFFU"
+          "target": "CEZA_KANUNU_493TFFU",
+          "typeTargets": {
+            "I": "INFRACTION_4853P",
+            "M": "MISDEMEANOR_80TIL",
+            "F": "FELONY_127SK8"
+          },
+          "typeOn": "☒",
+          "typeOff": "☐"
         },
         {
           "key": "HLAL_KONUMU_4493B3H",
