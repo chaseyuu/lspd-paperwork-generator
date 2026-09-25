@@ -248,13 +248,14 @@
             })
           : el('input', {
               class: 'input plain', id: id, placeholder: f.placeholder || null,
-              type: f.type === 'date' ? 'date' : f.type === 'time' ? 'time' : f.type === 'number' ? 'number' : 'text',
+              // "search" (not "text") for free-typed fields: Chrome/Firefox never offer their
+              // saved name/address personal-info autofill on <input type="search"> — this is what
+              // actually stops Google's stored (OOC) address/name data from being suggested at all,
+              // even on click. autocomplete="off" alone is not enough (Chrome mostly ignores it for
+              // name/address-shaped fields).
+              type: f.type === 'date' ? 'date' : f.type === 'time' ? 'time' : f.type === 'number' ? 'number' : 'search',
               min: f.min != null ? f.min : null, max: f.max != null ? f.max : null,
               inputmode: f.type === 'number' ? 'numeric' : null,
-              // Chrome ignores autocomplete="off" for name/address-shaped fields; "off" is still
-              // set for other browsers/password managers, plus the readonly-until-focus trick below
-              // (Chrome ve tarayıcıların otomatik doldurmasını engellemek için: Google/tarayıcı
-              // kayıtlı adres, isim vb. gerçek (OOC) bilgileri karakterin alanlarına yazmasın).
               autocomplete: 'off', autocapitalize: 'off', 'data-lpignore': 'true', 'data-1p-ignore': 'true', 'data-form-type': 'other',
             });
         // Readonly until the user actually focuses the field: browsers do not autofill readonly
@@ -263,6 +264,11 @@
         if ((f.type === 'text' || f.type === 'textarea' || !f.type) && !f.locked) {
           input.setAttribute('readonly', 'readonly');
           input.addEventListener('focus', function () { input.removeAttribute('readonly'); }, { once: true });
+        }
+        if (f.type !== 'textarea' && f.type !== 'date' && f.type !== 'time' && f.type !== 'number') {
+          // type="search" natively clears itself on Escape in Chrome/Safari; block that so it
+          // behaves like a normal text field for the user.
+          input.addEventListener('keydown', function (e) { if (e.key === 'Escape') e.preventDefault(); });
         }
         if (f.upper) {
           input.addEventListener('input', function () {

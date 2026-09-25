@@ -24,6 +24,15 @@ input.input[type="date"], input.input[type="time"] { cursor: text; }
 input.input[type="date"]::-webkit-calendar-picker-indicator,
 input.input[type="time"]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: .7; }
 
+/* type="search" is used instead of "text" on free-typed fields to opt out of the browser's
+   personal-info (name/address) autofill; strip the browser's own search-box chrome so it still
+   looks like a plain text field. */
+input.input[type="search"] { -webkit-appearance: none; appearance: none; }
+input.input[type="search"]::-webkit-search-decoration,
+input.input[type="search"]::-webkit-search-cancel-button,
+input.input[type="search"]::-webkit-search-results-button,
+input.input[type="search"]::-webkit-search-results-decoration { -webkit-appearance: none; appearance: none; display: none; }
+
 /* Locked select: filled automatically, can't be changed by hand */
 .select.locked .select-trigger { cursor: not-allowed; opacity: .75; }
 .select.locked .select-trigger .chevron { opacity: .5; }
