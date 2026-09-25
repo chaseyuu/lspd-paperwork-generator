@@ -29,60 +29,93 @@
   var controls = {};   // key -> { get(), set(v), field }
   var form = document.getElementById('report-form');
 
-  /* ---------- Custom select (same look as the settings page) ---------- */
+  /* ---------- Custom select (same look as the settings page, optional search box) ---------- */
+  function norm(t) {
+    return String(t).toLocaleLowerCase('tr-TR').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ı/g, 'i');
+  }
   function buildSelect(f, labelId) {
     var root = el('div', { class: 'select plain' });
-    var value = f.default || '';
+    // Selection is kept by position so two options may share a value (e.g. Lincoln / Other Units = O).
+    var sel = -1;
     var trigger = el('button', { type: 'button', class: 'select-trigger', 'aria-haspopup': 'listbox', 'aria-expanded': 'false', 'aria-labelledby': labelId });
-    var list = el('ul', { class: 'select-list', role: 'listbox', 'aria-labelledby': labelId });
-    f.values.forEach(function (opt) {
-      var li = el('li', { role: 'option', 'data-value': opt.value }, CHECK + '<span></span>');
+    var panel = el('div', { class: 'select-list' });
+    var search = f.search ? el('input', { class: 'select-search', type: 'text', placeholder: 'Aramak için yazın', autocomplete: 'off', 'aria-label': 'Ara' }) : null;
+    var list = el('ul', { role: 'listbox', 'aria-labelledby': labelId });
+    var empty = el('p', { class: 'select-empty', hidden: '' }, 'Sonuç bulunamadı.');
+    f.values.forEach(function (opt, i) {
+      var li = el('li', { role: 'option', 'data-value': opt.value, 'data-index': i }, CHECK + '<span></span>');
       li.lastChild.textContent = opt.label;
       li.addEventListener('mousedown', function (e) { e.preventDefault(); });
-      li.addEventListener('click', function () { set(opt.value); close(); trigger.focus(); });
+      li.addEventListener('click', function () { sel = i; render(); close(); trigger.focus(); });
       list.appendChild(li);
     });
-    root.appendChild(trigger); root.appendChild(list);
+    if (search) panel.appendChild(search);
+    panel.appendChild(list); panel.appendChild(empty);
+    root.appendChild(trigger); root.appendChild(panel);
 
-    function labelOf(v) {
-      for (var i = 0; i < f.values.length; i++) if (f.values[i].value === v) return f.values[i].label;
-      return '';
+    function indexOf(v) {
+      for (var i = 0; i < f.values.length; i++) if (f.values[i].value === v) return i;
+      return -1;
     }
     function render() {
-      var text = labelOf(value);
+      var text = sel >= 0 ? f.values[sel].label : '';
       trigger.innerHTML = (text ? '<span></span>' : '<span class="placeholder"></span>') + CHEVRON;
       trigger.firstChild.textContent = text || f.placeholder || '';
-      list.querySelectorAll('li').forEach(function (li) { li.setAttribute('aria-selected', String(li.getAttribute('data-value') === value)); });
+      list.querySelectorAll('li').forEach(function (li) { li.setAttribute('aria-selected', String(Number(li.getAttribute('data-index')) === sel)); });
     }
-    function set(v) { value = labelOf(v) ? v : ''; render(); }
+    function set(v) { sel = indexOf(v); render(); }
+    function pick(li) { sel = Number(li.getAttribute('data-index')); render(); }
+    function visible() { return Array.prototype.filter.call(list.querySelectorAll('li'), function (li) { return !li.hidden; }); }
     var active = -1;
     function highlight(i) {
-      var items = list.querySelectorAll('li');
-      items.forEach(function (li) { li.classList.remove('active'); });
+      var items = visible();
+      list.querySelectorAll('li.active').forEach(function (li) { li.classList.remove('active'); });
+      if (!items.length) { active = -1; return; }
       active = (i + items.length) % items.length;
       items[active].classList.add('active');
       items[active].scrollIntoView({ block: 'nearest' });
     }
-    function indexOf(v) { for (var i = 0; i < f.values.length; i++) if (f.values[i].value === v) return i; return 0; }
+    function filter() {
+      var q = norm(search.value.trim());
+      list.querySelectorAll('li').forEach(function (li) {
+        li.hidden = !!q && norm(li.textContent + ' ' + li.getAttribute('data-value')).indexOf(q) < 0;
+      });
+      empty.hidden = visible().length > 0;
+      highlight(0);
+    }
     function open() {
       document.querySelectorAll('.select.open').forEach(function (o) { o.classList.remove('open'); });
       root.classList.add('open'); trigger.setAttribute('aria-expanded', 'true');
-      highlight(indexOf(value));
+      if (search) { search.value = ''; filter(); search.focus(); }
+      var items = visible(), cur = 0;
+      items.forEach(function (li, i) { if (Number(li.getAttribute('data-index')) === sel) cur = i; });
+      highlight(cur);
     }
     function close() { root.classList.remove('open'); trigger.setAttribute('aria-expanded', 'false'); }
-    trigger.addEventListener('click', function () { root.classList.contains('open') ? close() : open(); });
-    trigger.addEventListener('keydown', function (e) {
+    function onKey(e) {
       var isOpen = root.classList.contains('open');
       if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
         e.preventDefault();
         if (!isOpen) open(); else highlight(active + (e.key === 'ArrowDown' ? 1 : -1));
-      } else if ((e.key === 'Enter' || e.key === ' ') && isOpen) {
-        e.preventDefault(); set(f.values[active].value); close();
-      } else if (e.key === 'Escape') { close(); }
-    });
-    trigger.addEventListener('blur', close);
-    render();
-    return { node: root, get: function () { return value; }, set: set, focusEl: trigger };
+      } else if (e.key === 'Enter' && isOpen) {
+        e.preventDefault();
+        var items = visible();
+        if (items[active]) { pick(items[active]); close(); trigger.focus(); }
+      } else if (e.key === ' ' && isOpen && e.target === trigger) {
+        e.preventDefault();
+        var it = visible()[active]; if (it) { pick(it); close(); }
+      } else if (e.key === 'Escape') { close(); trigger.focus(); }
+    }
+    trigger.addEventListener('click', function () { root.classList.contains('open') ? close() : open(); });
+    trigger.addEventListener('keydown', onKey);
+    if (search) {
+      search.addEventListener('input', filter);
+      search.addEventListener('keydown', onKey);
+    }
+    // Close when focus leaves the whole control (moving into the search box keeps it open).
+    root.addEventListener('focusout', function (e) { if (!root.contains(e.relatedTarget)) close(); });
+    set(f.default || '');
+    return { node: root, get: function () { return sel >= 0 ? f.values[sel].value : ''; }, set: set, focusEl: trigger };
   }
 
   /* ---------- Build the form ---------- */

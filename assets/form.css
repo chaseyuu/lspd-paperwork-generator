@@ -15,6 +15,17 @@ input.input[type="date"], input.input[type="time"] { cursor: text; }
 input.input[type="date"]::-webkit-calendar-picker-indicator,
 input.input[type="time"]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: .7; }
 
+/* Select list with a search box */
+.select-list ul { margin: 0; padding: 0; list-style: none; }
+.select-search {
+  position: sticky; top: -4px; z-index: 1; display: block; width: 100%; height: 36px; margin: -4px 0 4px;
+  padding: 0 10px; background: inherit; color: var(--foreground);
+  border: 0; border-bottom: 1px solid var(--border); border-radius: 8px 8px 0 0;
+  font: inherit; font-size: .875rem; outline: none;
+}
+.select-search::placeholder { color: var(--muted-foreground); }
+.select-empty { margin: 0; padding: 8px 10px; font-size: .875rem; color: var(--muted-foreground); }
+
 /* "?" help bubble */
 .help { position: relative; display: inline-flex; color: var(--muted-foreground); cursor: help; }
 .help svg { width: 14px; height: 14px; }

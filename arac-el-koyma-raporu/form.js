@@ -106,9 +106,63 @@ window.REPORT_FORM = {
         {
           "key": "GREVLENDIRME_191M7HR",
           "label": "Görevlendirme",
-          "type": "text",
-          "placeholder": "A",
-          "tooltip": "A/O/FS/X/XL/R/T/TL/E/M/MX"
+          "type": "select",
+          "search": true,
+          "values": [
+            {
+              "label": "Adam",
+              "value": "A"
+            },
+            {
+              "label": "Other Units (Lincoln dahil)",
+              "value": "O"
+            },
+            {
+              "label": "Lincoln",
+              "value": "O"
+            },
+            {
+              "label": "Field Supervisor",
+              "value": "FS"
+            },
+            {
+              "label": "Gang Enforcement Detail",
+              "value": "GIT, GED"
+            },
+            {
+              "label": "Tom",
+              "value": "T"
+            },
+            {
+              "label": "Tom Lincoln",
+              "value": "TL"
+            },
+            {
+              "label": "Mary",
+              "value": "M"
+            },
+            {
+              "label": "Detective Unit",
+              "value": "W"
+            },
+            {
+              "label": "Senior Lead Officer",
+              "value": "SL"
+            },
+            {
+              "label": "Desk Officer",
+              "value": "DESK"
+            },
+            {
+              "label": "Extra Patrol Unit",
+              "value": "X"
+            },
+            {
+              "label": "Metropolitan Division Unit",
+              "value": "R"
+            }
+          ],
+          "default": "A"
         },
         {
           "key": "TARIH_8IB6X",
