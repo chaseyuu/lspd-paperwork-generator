@@ -262,7 +262,7 @@ window.REPORT_FORM = {
       "fields": [
         {
           "type": "copylist",
-          "intro": "Temel olarak aşağıdaki başlıklar haricine çıkmamaya özen gösterin.",
+          "intro": "Miranda Bilgilendirmesine ihtiyaç duyulmadıysa bu bölümü işaretlemenize gerek yok. Ayrıca oyun içerisinde kullanmak için buradan kopyalama yapabilirsiniz.",
           "items": [
             "Sessiz kalma hakkına sahipsiniz.",
             "Söyleyeceğiniz herhangi bir şey mahkeme sırasında aleyhinizde kullanılabilir veya kullanılacaktır.",
