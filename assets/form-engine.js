@@ -26,19 +26,23 @@
  *                        article's own type letter) — used to split "I" into separate boxes by
  *                        article range.
  * Repeatable groups: a def.sections entry with group:true (key, label, title, min, max, target,
- *                     blockTemplate, joinWith, addLabel, cols, panelPerInstance, fields) renders `min`
- *                     instances plus an add button (up to `max`); only instances past `min` can be
- *                     removed, and only the last one (so numbering never has gaps). Its `fields` use
- *                     {suffix, ...} instead of {key, ...} — each instance n gets its own control keyed
+ *                     blockTemplate, joinWith, addLabel, cols, layout, fields) renders `min` instances
+ *                     plus an add button (up to `max`); only instances past `min` can be removed, and
+ *                     only the last one (so numbering never has gaps). Its `fields` use {suffix, ...}
+ *                     instead of {key, ...} — each instance n gets its own control keyed
  *                     `${key}_${n}_${suffix}`, and literal "{{N}}" inside a field's label is replaced
- *                     with n (e.g. label: "{{N}}) Kanıt Başlığı"). panelPerInstance (default true) picks
- *                     the layout: true gives each instance its own titled panel ("İlgili Kişi (1)",
- *                     "(2)", ...); false puts every instance's fields in one shared panel (section.title)
- *                     with the add button as the grid's last row (e.g. a 6th/7th Kanıt pair). blockTemplate
- *                     is a single instance's chunk of the output, written with literal "{{N}}" where the
- *                     instance number goes (e.g. "{KISI_{{N}}_ADI_SOYADI}"); at generate time every
- *                     instance's filled blockTemplate is joined with joinWith (default "\n\n") and
- *                     substituted into the main template at {target}.
+ *                     with n (e.g. label: "{{N}}) Kanıt Başlığı"). layout (default 'panels') picks the
+ *                     look: 'panels' gives each instance its own titled top-level panel ("İlgili Kişi
+ *                     (1)", "(2)", ...); 'cards' puts every instance in its own bordered card nested
+ *                     inside one outer panel (section.title), with a small remove button in the card's
+ *                     corner instead of a title; 'inline' puts every instance's fields directly in one
+ *                     shared panel's grid (section.title) with the add button as the grid's last row
+ *                     (e.g. a 6th/7th Kanıt pair). (panelPerInstance: false is an older alias for
+ *                     layout: 'inline'.) blockTemplate is a single instance's chunk of the output,
+ *                     written with literal "{{N}}" where the instance number goes (e.g.
+ *                     "{KISI_{{N}}_ADI_SOYADI}"); at generate time every instance's filled blockTemplate
+ *                     is joined with joinWith (default "\n\n") and substituted into the main template at
+ *                     {target}.
  * Template placeholders: {KEY}.
  */
 (function () {
@@ -353,14 +357,19 @@
    * replaced with n. section.blockTemplate is a per-instance BBCode/HTML chunk using
    * {KEY_{{N}}_SUFFIX}-style placeholders (literal "{{N}}"), joined with section.joinWith and
    * written into the main template at {section.target} when the report is generated.
-   * section.panelPerInstance (default true) picks the layout:
-   *  - true: each instance is its own titled panel — "İlgili Kişi (1)", "(2)", ... — with a
-   *    "+ label Ekle" button after the last one (e.g. İlgili Kişi).
-   *  - false: a single panel (section.title) holds every instance's fields in one grid, with the
-   *    add button as the grid's last (span-all) row (e.g. Kanıtlar, adding a 6th/7th pair).
-   * Either way only the last instance past section.min can be removed, so numbering never gaps. */
+   * section.layout picks how instances are shown (default 'panels'; section.panelPerInstance ===
+   * false is the older way to ask for 'inline', kept for back-compat):
+   *  - 'panels': each instance is its own titled top-level panel — "İlgili Kişi (1)", "(2)", ... —
+   *    with a "+ label Ekle" button after the last one.
+   *  - 'cards': one outer panel titled section.title/label holds a nested, individually-bordered
+   *    card per instance (no per-card title — cards are told apart by their own box, like the
+   *    person cards in a "Involved People" box), with a small remove button in each card's corner,
+   *    and the add button below the last card (e.g. İlgili Kişi).
+   *  - 'inline': a single panel (section.title) holds every instance's fields directly in one grid,
+   *    with the add button as the grid's last (span-all) row (e.g. Kanıtlar, adding a 6th/7th pair).
+   * In every layout, only the last instance past section.min can be removed, so numbering never gaps. */
   function buildGroupSection(section) {
-    var panelPerInstance = section.panelPerInstance !== false;
+    var layout = section.layout || (section.panelPerInstance === false ? 'inline' : 'panels');
     var count = section.min;
     var addBtn = el('button', { type: 'button', class: 'btn' }, PLUS + (section.addLabel || (section.label + ' Ekle')));
 
@@ -377,7 +386,66 @@
       section.fields.forEach(function (f) { delete controls[section.key + '_' + n + '_' + f.suffix]; });
     }
 
-    if (panelPerInstance) {
+    if (layout === 'cards') {
+      var outerPanel = el('section', { class: 'panel form-panel' });
+      outerPanel.appendChild(el('h2', {}, esc(section.title || section.label)));
+      var cardsWrap = el('div', { class: 'group-cards' });
+      outerPanel.appendChild(cardsWrap);
+      var cardsAddWrap = el('div', { class: 'form-actions group-add' });
+      cardsAddWrap.appendChild(addBtn);
+      outerPanel.appendChild(cardsAddWrap);
+      form.appendChild(outerPanel);
+      var cards = [];   // { node, removeBtn }
+
+      function refreshRemovableCards() {
+        cards.forEach(function (c, idx) {
+          var n = idx + 1;
+          if (c.removeBtn) c.removeBtn.style.display = (n === count && n > section.min) ? '' : 'none';
+        });
+        cardsAddWrap.style.display = count >= section.max ? 'none' : '';
+      }
+      function buildCard(n) {
+        var card = el('div', { class: 'group-card' });
+        var removeBtn = null;
+        if (n > section.min) {
+          removeBtn = el('button', { type: 'button', class: 'btn icon-btn group-card-remove', 'aria-label': 'Kaldır', title: 'Kaldır' }, TRASH);
+          removeBtn.addEventListener('click', function () {
+            dropInstanceControls(n);
+            card.remove();
+            cards.pop();
+            count--;
+            refreshRemovableCards();
+            scheduleAuto();
+          });
+          card.appendChild(removeBtn);
+        }
+        var grid = el('div', { class: 'field-grid' + (section.cols === 3 ? ' cols-3' : '') });
+        fieldDefsFor(n).forEach(function (f) {
+          var built = buildField(f);
+          built.ctrl.field = f;
+          built.ctrl.wrap = built.wrap;
+          controls[f.key] = built.ctrl;
+          grid.appendChild(built.wrap);
+        });
+        card.appendChild(grid);
+        return { node: card, removeBtn: removeBtn };
+      }
+
+      for (var k = 1; k <= section.min; k++) {
+        var c = buildCard(k);
+        cards.push(c);
+        cardsWrap.appendChild(c.node);
+      }
+      refreshRemovableCards();
+      addBtn.addEventListener('click', function () {
+        count++;
+        var c2 = buildCard(count);
+        cards.push(c2);
+        cardsWrap.appendChild(c2.node);
+        refreshRemovableCards();
+        scheduleAuto();
+      });
+    } else if (layout === 'panels') {
       var container = el('div', { class: 'group-section' });
       form.appendChild(container);
       var addWrap = el('div', { class: 'form-actions group-add' });
