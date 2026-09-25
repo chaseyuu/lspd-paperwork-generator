@@ -3,7 +3,7 @@
  * and this script builds the form, fills officer fields from the active character, and turns the
  * answers into the report (copy as HTML, copy title, download as image).
  *
- * Field types: text, select, date (dd/MM/yyyy), time (HH:mm), textarea,
+ * Field types: text, number (min, max), select, date (dd/MM/yyyy), time (HH:mm), textarea,
  *              charges (penal code picker that writes article numbers into f.target).
  * Field options: key, label, placeholder, hint, tooltip, values [{label, value}], default,
  *                upper ('en' | 'tr'), span ('all'), prefill ('name' | 'badge' | 'division'), search (true),
@@ -73,7 +73,7 @@
     }
     function set(v) { sel = indexOf(v); render(); }
     function pick(li) { sel = Number(li.getAttribute('data-index')); render(); changed(); }
-    function changed() { if (f.onChange) f.onChange(sel >= 0 ? f.values[sel].value : ''); }
+    function changed() { if (f.onChange) f.onChange(sel >= 0 ? f.values[sel].value : ''); scheduleAuto(); }
     function visible() { return Array.prototype.filter.call(list.querySelectorAll('li'), function (li) { return !li.hidden; }); }
     var active = -1;
     function highlight(i) {
@@ -175,6 +175,7 @@
         var t = controls[f.typeTargets[type]];
         if (t) t.set(types[type] ? f.typeOn : f.typeOff);
       });
+      scheduleAuto();
     }
     function addRow(focus) {
       var row = el('div', { class: 'charge-row' });
@@ -225,7 +226,9 @@
           ? el('textarea', { class: 'input plain', id: id, rows: f.rows || 6, placeholder: f.placeholder || null })
           : el('input', {
               class: 'input plain', id: id, autocomplete: 'off', placeholder: f.placeholder || null,
-              type: f.type === 'date' ? 'date' : f.type === 'time' ? 'time' : 'text',
+              type: f.type === 'date' ? 'date' : f.type === 'time' ? 'time' : f.type === 'number' ? 'number' : 'text',
+              min: f.min != null ? f.min : null, max: f.max != null ? f.max : null,
+              inputmode: f.type === 'number' ? 'numeric' : null,
             });
         if (f.upper) {
           input.addEventListener('input', function () {
@@ -282,7 +285,37 @@
       }
     });
   }
+  /* ---------- Text written automatically from other fields (def.autoText) ----------
+   * Kept up to date until the user edits the target box by hand; clearing it turns it back on. */
+  var autoTimer = null;
+  function scheduleAuto() {
+    if (!def.autoText) return;
+    clearTimeout(autoTimer);
+    autoTimer = setTimeout(updateAuto, 0);
+  }
+  function updateAuto() {
+    var target = controls[def.autoText.target];
+    if (!target || !target.input) return;
+    var input = target.input;
+    if (input.value && !input.dataset.autotext) return;   // edited by hand
+    var raw = {};
+    Object.keys(controls).forEach(function (k) { raw[k] = controls[k].get(); });
+    var text = def.autoText.build(raw) || '';
+    input.value = text;
+    if (text) input.dataset.autotext = '1'; else delete input.dataset.autotext;
+  }
+  form.addEventListener('input', function (e) {
+    var target = def.autoText && controls[def.autoText.target];
+    if (target && e.target === target.input) {
+      if (target.input.value) delete target.input.dataset.autotext; else scheduleAuto();
+      return;
+    }
+    scheduleAuto();
+  });
+  document.addEventListener('lspd:characters-change', scheduleAuto);
+
   prefill();
+  scheduleAuto();
   document.addEventListener('lspd:characters-change', prefill);
 
   /* ---------- Output ---------- */
@@ -364,8 +397,31 @@
     });
   }
 
+  /* Number boxes with min / max (e.g. 1–30 days). */
+  function checkRanges() {
+    var first = null;
+    Object.keys(controls).forEach(function (key) {
+      var c = controls[key], f = c.field;
+      if (f.type !== 'number' || (f.min == null && f.max == null)) return;
+      var v = String(c.get() || '').trim(), n = Number(v);
+      var bad = v !== '' && (!/^\d+$/.test(v) || (f.min != null && n < f.min) || (f.max != null && n > f.max));
+      c.wrap.classList.toggle('invalid', bad);
+      var msg = c.wrap.querySelector('.error-msg');
+      if (bad && !msg) c.wrap.appendChild(el('p', { class: 'error-msg' }, esc(f.min + ' ile ' + f.max + ' arasında bir değer girin.')));
+      if (!bad && msg) msg.remove();
+      if (bad && !first) first = c;
+    });
+    if (first) { first.wrap.scrollIntoView({ block: 'center', behavior: 'smooth' }); first.focusEl.focus({ preventScroll: true }); }
+    return !first;
+  }
+  form.addEventListener('input', function (e) {
+    var c = Object.keys(controls).map(function (k) { return controls[k]; }).filter(function (c) { return c.input === e.target; })[0];
+    if (c && c.field.type === 'number' && c.wrap.classList.contains('invalid')) checkRanges();
+  });
+
   document.getElementById('generate-btn').addEventListener('click', function () {
     if (def.required && !validate()) return;
+    if (!checkRanges()) return;
     var vals = values();
     output = fill(def.template, vals, true);
     titleInput.value = fill(def.titleTemplate || '', vals, false);
