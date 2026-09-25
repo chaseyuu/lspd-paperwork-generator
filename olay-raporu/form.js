@@ -1,7 +1,7 @@
-/* Olay Raporu Formu: alanlar ve çıktı şablonu (BBCode). */
+/* Olay Raporu: alanlar ve çıktı şablonu (BBCode). */
 window.REPORT_FORM = {
   "emptyValue": "—",
-  "title": "Olay Raporu Formu",
+  "title": "Olay Raporu",
   "titleTemplate": "OR — {TARH_17YUM7} - {RAPOR_NO_148S5HW}",
   "outputFormat": "bbcode",
   "sections": [
