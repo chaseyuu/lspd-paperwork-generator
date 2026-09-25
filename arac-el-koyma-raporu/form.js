@@ -1,5 +1,6 @@
 /* Araç El Koyma Formu: alanlar ve çıktı şablonu. */
 window.REPORT_FORM = {
+  "emptyValue": "—",
   "title": "Araç El Koyma Formu",
   "titleTemplate": "{HLAL_TARIH_538EMNO} - {PLAKA_2667IPU} - {MODEL_2555NYG}",
   "sections": [

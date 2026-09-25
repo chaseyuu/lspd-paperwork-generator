@@ -209,7 +209,7 @@
       var id = 'f-' + f.key, labelId = id + '-label';
       var wrap = el('div', { class: 'field' + (f.span === 'all' ? ' span-all' : '') });
       var labelRow = el('div', { class: 'label-row' });
-      labelRow.appendChild(el('label', { id: labelId, for: f.type === 'select' || f.type === 'charges' ? null : id }, esc(f.label) + (f.locked ? '' : '<span class="req" aria-hidden="true">*</span>')));
+      labelRow.appendChild(el('label', { id: labelId, for: f.type === 'select' || f.type === 'charges' ? null : id }, esc(f.label) + (f.locked || !def.required ? '' : '<span class="req" aria-hidden="true">*</span>')));
       if (f.tooltip) labelRow.appendChild(el('span', { class: 'help', tabindex: '0', 'aria-label': f.tooltip }, HELP + '<span class="tip" role="tooltip">' + esc(f.tooltip) + '</span>'));
       wrap.appendChild(labelRow);
 
@@ -297,7 +297,12 @@
   }
   function values() {
     var out = {};
-    Object.keys(controls).forEach(function (key) { if (!controls[key].noOutput) out[key] = formatValue(controls[key].field, controls[key].get()); });
+    Object.keys(controls).forEach(function (key) {
+      if (controls[key].noOutput) return;
+      var v = formatValue(controls[key].field, controls[key].get());
+      // Empty boxes are written as "—" (def.emptyValue) in the report and its title.
+      out[key] = String(v).trim() ? v : (def.emptyValue != null ? def.emptyValue : '');
+    });
     return out;
   }
   function fill(template, vals, html) {
@@ -360,7 +365,7 @@
   }
 
   document.getElementById('generate-btn').addEventListener('click', function () {
-    if (!validate()) return;
+    if (def.required && !validate()) return;
     var vals = values();
     output = fill(def.template, vals, true);
     titleInput.value = fill(def.titleTemplate || '', vals, false);
