@@ -14,6 +14,7 @@ window.REPORT_FORM = {
           "label": "Rapor No.",
           "type": "text",
           "placeholder": "00000",
+          "default": "00000",
           "tooltip": "Forum üzerindeki son rapor numarasını kontrol etmeyi unutmayın."
         },
         {
@@ -331,9 +332,26 @@ window.REPORT_FORM = {
         {
           "suffix": "BASLIK",
           "label": "{{N}}) Kanıt Başlığı",
-          "type": "text",
+          "type": "select",
+          "search": true,
           "placeholder": "—",
-          "tooltip": "Temel olarak şu başlıklar haricine çıkmamaya özen gösterin: OR — 00/00/2025 — 00000, IR — 00/00/2025 — 00000, EV-20250000-000, CCTV ID #000 — Konum — GG/AA/YYYY, DICVS Seri No. 00000 - GG/AA/YYYY, BWV A. Soyadı #00000 - GG/AA/YYYY, Trafik Kazası Fotoğrafları (Plaka), Impound Report - Araç Modeli - Plaka, Tutuklama Raporu (Şüpheli Adı), FSD Silah Adı - Balistik İncelemesi, FSD Eşya Adı - Parmak İzi İncelemesi, FSD DNA İnceleme Raporu, FSD Kovan İnceleme Raporu, APB - Şüpheli Adı (APB Numarası), Coroner Raporu (Mağdur Adı)."
+          "values": [
+            { "label": "Olay Raporu", "value": "OR — 00/00/2025 — 00000" },
+            { "label": "İfade Raporu", "value": "IR — 00/00/2025 — 00000" },
+            { "label": "Evidence Locker Kaydı", "value": "EV-20260000-000" },
+            { "label": "CCTV Görüntüsü", "value": "CCTV ID #000 — Konum — GG/AA/YYYY" },
+            { "label": "DICVS Görüntüsü", "value": "DICVS Seri No. 00000 - GG/AA/YYYY" },
+            { "label": "BWV Görüntüsü", "value": "BWV A. Soyadı #00000 - GG/AA/YYYY" },
+            { "label": "Trafik Kazası Fotoğrafları", "value": "Trafik Kazası Fotoğrafları (Plaka)" },
+            { "label": "Araç El Koyma Raporu", "value": "Impound Report - Araç Modeli - Plaka" },
+            { "label": "Tutuklama Raporu", "value": "Tutuklama Raporu (Şüpheli Adı)" },
+            { "label": "FSD Balistik İnceleme Raporu", "value": "FSD Silah Adı - Balistik İncelemesi" },
+            { "label": "FSD Parmak İzi İnceleme Raporu", "value": "FSD Eşya Adı - Parmak İzi İncelemesi" },
+            { "label": "FSD DNA İnceleme Raporu", "value": "FSD DNA İnceleme Raporu" },
+            { "label": "FSD Kovan İnceleme Raporu", "value": "FSD Kovan İnceleme Raporu" },
+            { "label": "APB", "value": "APB - Şüpheli Adı (APB Numarası)" },
+            { "label": "Coroner Raporu", "value": "Coroner Raporu (Mağdur Adı)" }
+          ]
         },
         {
           "suffix": "ICERIK",
