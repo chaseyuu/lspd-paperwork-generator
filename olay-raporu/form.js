@@ -203,8 +203,10 @@ window.REPORT_FORM = {
     },
     {
       "group": true,
+      "layout": "cards",
       "key": "KISI",
       "label": "İlgili Kişi",
+      "title": "İlgili Kişi",
       "min": 2,
       "max": 5,
       "addLabel": "Kişi Ekle",
