@@ -2,7 +2,6 @@
 window.REPORT_FORM = {
   "emptyValue": "—",
   "title": "İhlal Raporu Formu",
-  "titleTemplate": "{HLAL_TARIH_538EMNO} - {PLAKA_2667IPU} - {MODEL_2555NYG}",
   "sections": [
     {
       "title": "İhlal Türü",
@@ -286,6 +285,15 @@ window.REPORT_FORM = {
           },
           "typeOn": "☒",
           "typeOff": "☐",
+          "filter": function (c) {
+            // Misdemeanor articles are limited to the 400–699 range plus a short allow-list of
+            // commonly cited out-of-range articles; Infraction articles are not restricted here.
+            if (c.type !== 'M') return true;
+            var n = parseInt(c.id, 10);
+            if (n >= 400 && n <= 699) return true;
+            var allowed = ['110', '117', '118', '119a', '119b', '125', '137', '138'];
+            return allowed.indexOf(c.id) >= 0;
+          },
           "classify": function (opt) {
             if (opt.type === 'M') return 'MISDEMEANOR';
             if (opt.type === 'I') {
