@@ -40,9 +40,12 @@ Kartı'nda olduğu gibi) çıktı ham BBCode metni olarak üretilir.
   Bilgisi/Memur, Seri No., Division) bu kısıtlamadan etkilenmez.
 - Genel Bilgiler'deki Tarih alanı bilgisayarın o günkü tarihiyle başlar.
 - Boş bırakılan alanlar raporda `—` olarak yazılır.
-- Her iki formda da **tüm alanlar zorunludur** (otomatik doldurulan/kilitli alanlar hariç). Boş bir
-  alanla **Oluştur**'a basılırsa rapor oluşturulmaz; boş alanın kutusu turuncu ile vurgulanır ve
-  altında "Bu alan zorunludur." (Kanunlar için "En az bir kanun seçmelisiniz.") uyarısı gösterilir.
+- Araç El Koyma Formu ve İhlal Raporu'nda **tüm alanlar zorunludur** (otomatik doldurulan/kilitli
+  alanlar hariç). Boş bir alanla **Oluştur**'a basılırsa rapor oluşturulmaz; boş alanın kutusu
+  turuncu ile vurgulanır ve altında "Bu alan zorunludur." (Kanunlar için "En az bir kanun
+  seçmelisiniz.") uyarısı gösterilir. **Field Interview Kartı'nda alanlar zorunlu değildir**; boş
+  bırakılan herhangi bir alan (seçmeli alanlar dahil) raporda otomatik olarak `—` yazılır ve
+  **Oluştur** her durumda çalışır.
 - **Açıklama** alanı, gerekli bilgiler (İhlal Tarih, İhlal Saati, Şüpheli Ad Soyadı, Plaka, Model, Kanunlar ve
   Kaç Gün Çekildi?) girildikçe canlı olarak yazılır (henüz girilmemiş kısımlar `{Alan}` şeklinde görünür); örneğin: *25 Eylül 2026 tarihinde, 1312'de Jonathan Mendez
   tarafından sürülen JBC123 plakalı, Scout model aracın, San Andreas Ceza Kanunu'nun 115. Kolluk Kuvvetlerinden
