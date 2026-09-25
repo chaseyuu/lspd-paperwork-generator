@@ -261,6 +261,16 @@ window.REPORT_FORM = {
       "cols": 3,
       "fields": [
         {
+          "type": "copylist",
+          "intro": "Temel olarak aşağıdaki başlıklar haricine çıkmamaya özen gösterin.",
+          "items": [
+            "Sessiz kalma hakkına sahipsiniz.",
+            "Söyleyeceğiniz herhangi bir şey mahkeme sırasında aleyhinizde kullanılabilir veya kullanılacaktır.",
+            "İfadeniz öncesinde veya sırasında bir avukatla konuşma ve sizinle birlikte bulunması hakkına sahipsiniz.",
+            "Eğer bir avukat tutacak maddi durumunuz bulunmuyorsa istemeniz durumunda sizi ücretsiz olarak temsil edecek bir avukat atanacaktır."
+          ]
+        },
+        {
           "key": "MIRANDA_BILGILENDIRMESI_383WN5K",
           "label": "Miranda Haklarını Anladı",
           "type": "checkbox",
