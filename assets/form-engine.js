@@ -351,6 +351,23 @@
     return { wrap: wrap, ctrl: ctrl };
   }
 
+  /* ---------- Panel with an external title ----------
+   * Builds "<div class=section-block><h2 class=section-title>...</h2><section class=panel
+   * form-panel>...</section></div>" — the title sits above the bordered box rather than as its
+   * first line, with the section-block's own margin giving consistent breathing room between
+   * one boxed section and the next. Appended to opts.container (default: form), before opts.before
+   * if given (opts.before must already be a child of opts.container, or omitted to just append). */
+  function titledPanel(titleText, opts) {
+    opts = opts || {};
+    var block = el('div', { class: 'section-block' });
+    block.appendChild(el('h2', { class: 'section-title', id: opts.id || null }, esc(titleText)));
+    var panel = el('section', { class: 'panel form-panel', 'aria-labelledby': opts.id || null });
+    block.appendChild(panel);
+    var container = opts.container || form;
+    if (opts.before) container.insertBefore(block, opts.before); else container.appendChild(block);
+    return panel;
+  }
+
   /* ---------- Repeatable field group ----------
    * section.fields use {suffix, ...} instead of {key, ...}; each instance n gets its own control
    * keyed section.key + '_' + n + '_' + suffix, and any literal "{{N}}" in a field's label is
@@ -387,14 +404,12 @@
     }
 
     if (layout === 'cards') {
-      var outerPanel = el('section', { class: 'panel form-panel' });
-      outerPanel.appendChild(el('h2', {}, esc(section.title || section.label)));
+      var outerPanel = titledPanel(section.title || section.label);
       var cardsWrap = el('div', { class: 'group-cards' });
       outerPanel.appendChild(cardsWrap);
       var cardsAddWrap = el('div', { class: 'form-actions group-add' });
       cardsAddWrap.appendChild(addBtn);
       outerPanel.appendChild(cardsAddWrap);
-      form.appendChild(outerPanel);
       var cards = [];   // { node, removeBtn }
 
       function refreshRemovableCards() {
@@ -408,7 +423,7 @@
         var card = el('div', { class: 'group-card' });
         var removeBtn = null;
         if (n > section.min) {
-          removeBtn = el('button', { type: 'button', class: 'btn icon-btn group-card-remove', 'aria-label': 'Kaldır', title: 'Kaldır' }, TRASH);
+          removeBtn = el('button', { type: 'button', class: 'btn icon-btn corner-remove-btn', 'aria-label': 'Kaldır', title: 'Kaldır' }, TRASH);
           removeBtn.addEventListener('click', function () {
             dropInstanceControls(n);
             card.remove();
@@ -450,6 +465,7 @@
       form.appendChild(container);
       var addWrap = el('div', { class: 'form-actions group-add' });
       addWrap.appendChild(addBtn);
+      container.appendChild(addWrap);
       var panels = [];   // { node, removeBtn }
 
       function refreshRemovable() {
@@ -460,23 +476,23 @@
         addWrap.style.display = count >= section.max ? 'none' : '';
       }
       function buildInstance(n) {
-        var panel = el('section', { class: 'panel form-panel' });
-        var headRow = el('div', { class: 'group-head' });
-        headRow.appendChild(el('h2', {}, esc(section.label) + ' (' + n + ')'));
+        var block, panel = titledPanel(section.label + ' (' + n + ')', {
+          container: container, before: addWrap,
+        });
+        block = panel.parentNode;
         var removeBtn = null;
         if (n > section.min) {
-          removeBtn = el('button', { type: 'button', class: 'btn icon-btn', 'aria-label': 'Kaldır', title: 'Kaldır' }, TRASH);
+          removeBtn = el('button', { type: 'button', class: 'btn icon-btn corner-remove-btn', 'aria-label': 'Kaldır', title: 'Kaldır' }, TRASH);
           removeBtn.addEventListener('click', function () {
             dropInstanceControls(n);
-            panel.remove();
+            block.remove();
             panels.pop();
             count--;
             refreshRemovable();
             scheduleAuto();
           });
-          headRow.appendChild(removeBtn);
+          panel.appendChild(removeBtn);
         }
-        panel.appendChild(headRow);
         var grid = el('div', { class: 'field-grid' + (section.cols === 3 ? ' cols-3' : '') });
         fieldDefsFor(n).forEach(function (f) {
           var built = buildField(f);
@@ -486,69 +502,61 @@
           grid.appendChild(built.wrap);
         });
         panel.appendChild(grid);
-        return { node: panel, removeBtn: removeBtn };
+        return { node: block, removeBtn: removeBtn };
       }
 
-      for (var i = 1; i <= section.min; i++) {
-        var inst = buildInstance(i);
-        panels.push(inst);
-        container.appendChild(inst.node);
-      }
-      container.appendChild(addWrap);
+      for (var i = 1; i <= section.min; i++) panels.push(buildInstance(i));
       refreshRemovable();
       addBtn.addEventListener('click', function () {
         count++;
-        var inst = buildInstance(count);
-        panels.push(inst);
-        container.insertBefore(inst.node, addWrap);
+        panels.push(buildInstance(count));
         refreshRemovable();
         scheduleAuto();
       });
     } else {
-      var panel2 = el('section', { class: 'panel form-panel' });
-      panel2.appendChild(el('h2', {}, esc(section.title || section.label)));
+      var panel2 = titledPanel(section.title || section.label);
       var grid2 = el('div', { class: 'field-grid' + (section.cols === 3 ? ' cols-3' : '') });
       panel2.appendChild(grid2);
-      form.appendChild(panel2);
       var addRowWrap = el('div', { class: 'field span-all group-add-inline' });
       addRowWrap.appendChild(addBtn);
       grid2.appendChild(addRowWrap);
-      var entries = [];   // { wraps: [...], removeRow }
+      var entries = [];   // { node, removeBtn }
 
       function refreshRemovable2() {
         entries.forEach(function (e, idx) {
           var n = idx + 1;
-          if (e.removeRow) e.removeRow.style.display = (n === count && n > section.min) ? '' : 'none';
+          if (e.removeBtn) e.removeBtn.style.display = (n === count && n > section.min) ? '' : 'none';
         });
         addRowWrap.style.display = count >= section.max ? 'none' : '';
       }
       function buildInstance2(n) {
-        var wraps = [];
+        // One "row" wrapping this instance's own fields (in their own nested grid), so hovering
+        // anywhere over the pair — not just the remove button itself — reveals the remove button.
+        var item = el('div', { class: 'field span-all group-inline-item' });
+        var itemGrid = el('div', { class: 'field-grid' + (section.cols === 3 ? ' cols-3' : '') });
+        item.appendChild(itemGrid);
         fieldDefsFor(n).forEach(function (f) {
           var built = buildField(f);
           built.ctrl.field = f;
           built.ctrl.wrap = built.wrap;
           controls[f.key] = built.ctrl;
-          grid2.insertBefore(built.wrap, addRowWrap);
-          wraps.push(built.wrap);
+          itemGrid.appendChild(built.wrap);
         });
-        var removeRow = null;
+        var removeBtn = null;
         if (n > section.min) {
-          removeRow = el('div', { class: 'field span-all group-inline-remove' });
-          var removeBtn2 = el('button', { type: 'button', class: 'btn icon-btn', 'aria-label': 'Kaldır', title: 'Kaldır' }, TRASH);
-          removeBtn2.addEventListener('click', function () {
+          removeBtn = el('button', { type: 'button', class: 'btn icon-btn group-inline-remove-btn', 'aria-label': 'Kaldır', title: 'Kaldır' }, TRASH);
+          removeBtn.addEventListener('click', function () {
             dropInstanceControls(n);
-            wraps.forEach(function (w) { w.remove(); });
-            removeRow.remove();
+            item.remove();
             entries.pop();
             count--;
             refreshRemovable2();
             scheduleAuto();
           });
-          removeRow.appendChild(removeBtn2);
-          grid2.insertBefore(removeRow, addRowWrap);
+          item.appendChild(removeBtn);
         }
-        return { wraps: wraps, removeRow: removeRow };
+        grid2.insertBefore(item, addRowWrap);
+        return { node: item, removeBtn: removeBtn };
       }
 
       for (var j = 1; j <= section.min; j++) entries.push(buildInstance2(j));
@@ -566,8 +574,7 @@
 
   def.sections.forEach(function (section, si) {
     if (section.group) { buildGroupSection(section); return; }
-    var panel = el('section', { class: 'panel form-panel', 'aria-labelledby': 'sec-' + si });
-    panel.appendChild(el('h2', { id: 'sec-' + si }, esc(section.title)));
+    var panel = titledPanel(section.title, { id: 'sec-' + si });
     var grid = el('div', { class: 'field-grid' + (section.cols === 3 ? ' cols-3' : '') });
     section.fields.forEach(function (f) {
       var built = buildField(f);
@@ -577,7 +584,6 @@
       grid.appendChild(built.wrap);
     });
     panel.appendChild(grid);
-    form.appendChild(panel);
   });
 
   /* ---------- Officer fields from the active character ---------- */

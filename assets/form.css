@@ -33,19 +33,46 @@
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
 }
 
-/* Repeatable field group (e.g. Kanıtlar: inline mode) */
-.group-section { display: flex; flex-direction: column; gap: 20px; margin-bottom: 20px; }
-.group-section .panel { margin-bottom: 0; }
-.group-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 16px; }
-.group-head h2 { margin: 0; }
-.form-actions.group-add { justify-content: flex-start; margin-top: 0; }
-.field.group-add-inline { display: flex; }
-.field.group-add-inline .btn { align-self: flex-start; }
-.field.group-inline-remove { display: flex; justify-content: flex-end; margin-top: -8px; }
+/* Panel with an external title: the h2 sits above the bordered box (not as its first line), and
+   this block's own margin gives consistent, reasonable breathing room to the next boxed section —
+   used for every section/group panel the engine builds. */
+.section-block { margin-bottom: 28px; }
+.section-block:last-child { margin-bottom: 0; }
+.section-block > .panel { margin-bottom: 0; }
+.section-title { margin: 0 0 14px 2px; font-size: 1.25rem; font-weight: 600; color: var(--foreground); }
 
-/* Repeatable field group, card layout (e.g. İlgili Kişi): one outer titled panel holding a nested,
-   individually-bordered card per instance, each with a corner "remove" button — instead of a whole
-   separate top-level panel per instance. */
+/* A small "remove" icon-button that only appears when hovering the row/card it belongs to (or
+   while it has keyboard focus) — never permanently visible. */
+.corner-remove-btn, .group-inline-remove-btn {
+  opacity: 0; transition: opacity .15s;
+}
+.corner-remove-btn:focus-visible, .group-inline-remove-btn:focus-visible { opacity: 1; }
+
+/* Repeatable field group, "panels" layout: each instance is its own titled top-level panel, with a
+   small hover-revealed remove button in its corner. */
+.group-section { display: flex; flex-direction: column; }
+.group-section .section-block { margin-bottom: 20px; }
+.form-panel { position: relative; }
+/* Child combinator: only a remove button that's a direct child of the hovered panel — i.e. the
+   "panels" layout, one instance per panel — reacts here; "cards" layout's buttons (nested one level
+   deeper, inside .group-card) are handled by the ".group-card:hover" rule below instead, so hovering
+   one card in a shared outer panel doesn't also reveal every other card's button. */
+.form-panel:hover > .corner-remove-btn { opacity: 1; }
+.form-actions.group-add { justify-content: flex-start; margin-top: 20px; }
+
+/* Repeatable field group, "inline" layout (e.g. Kanıtlar): every instance's fields sit directly in
+   the shared panel's grid, each pair wrapped in its own row so hovering it reveals its remove
+   button; the add button is the grid's last (span-all) row. */
+.field.group-add-inline { display: flex; margin-top: 8px; }
+.field.group-add-inline .btn { align-self: flex-start; }
+.field.group-inline-item { position: relative; padding-right: 44px; }
+.field.group-inline-item .field-grid { margin-top: 0; }
+.group-inline-remove-btn { position: absolute; top: 50%; right: 0; transform: translateY(-50%); }
+.field.group-inline-item:hover .group-inline-remove-btn { opacity: 1; }
+
+/* Repeatable field group, "cards" layout (e.g. İlgili Kişi): one outer titled panel holding a
+   nested, individually-bordered card per instance, each with a corner "remove" button — instead of
+   a whole separate top-level panel per instance. */
 .group-cards { display: flex; flex-direction: column; gap: 16px; }
 .group-card {
   position: relative;
@@ -55,9 +82,8 @@
   border-radius: var(--radius);
 }
 .group-card .field-grid { margin-top: 0; }
-.group-card-remove {
-  position: absolute; top: 14px; right: 14px;
-}
+.group-card:hover .corner-remove-btn { opacity: 1; }
+.corner-remove-btn { position: absolute; top: 14px; right: 14px; }
 
 /* Required fields */
 .req { margin-left: 3px; color: hsl(38 92% 50%); }
