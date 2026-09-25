@@ -7,7 +7,8 @@
  *              charges (penal code picker that writes article numbers into f.target).
  * Field options: key, label, placeholder, hint, tooltip, values [{label, value}], default,
  *                upper ('en' | 'tr'), span ('all'), prefill ('name' | 'badge' | 'division'), search (true),
- *                ids / ranges / target / typeTargets / typeOn / typeOff (charges only), locked (select, text).
+ *                ids / ranges / target / typeTargets / typeOn / typeOff (charges only), locked (select, text),
+ *                today (date: starts with the computer's date).
  * Template placeholders: {KEY}.
  */
 (function () {
@@ -232,6 +233,11 @@
             input.value = input.value.toLocaleUpperCase(f.upper === 'tr' ? 'tr-TR' : 'en-US');
             try { input.setSelectionRange(pos, pos); } catch (e) {}
           });
+        }
+        if (f.type === 'date' && f.today) {
+          // Today's date from the computer's clock (local time, not UTC).
+          var now = new Date();
+          input.value = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
         }
         input.addEventListener('input', function () { delete input.dataset.autofill; });
         if (f.locked) {

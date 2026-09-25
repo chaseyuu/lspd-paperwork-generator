@@ -120,12 +120,16 @@ window.REPORT_FORM = {
               "value": "A"
             },
             {
-              "label": "Other Units (Lincoln dahil)",
-              "value": "O"
+              "label": "Desk Officer",
+              "value": "DESK"
             },
             {
-              "label": "Lincoln",
-              "value": "O"
+              "label": "Detective Unit",
+              "value": "W"
+            },
+            {
+              "label": "Extra Patrol Unit",
+              "value": "X"
             },
             {
               "label": "Field Supervisor",
@@ -136,36 +140,28 @@ window.REPORT_FORM = {
               "value": "GIT, GED"
             },
             {
-              "label": "Tom",
-              "value": "T"
-            },
-            {
-              "label": "Tom Lincoln",
-              "value": "TL"
-            },
-            {
               "label": "Mary",
               "value": "M"
             },
             {
-              "label": "Detective Unit",
-              "value": "W"
+              "label": "Metropolitan Division Unit",
+              "value": "R"
+            },
+            {
+              "label": "Other Units (Lincoln dahil)",
+              "value": "O"
             },
             {
               "label": "Senior Lead Officer",
               "value": "SL"
             },
             {
-              "label": "Desk Officer",
-              "value": "DESK"
+              "label": "Tom",
+              "value": "T"
             },
             {
-              "label": "Extra Patrol Unit",
-              "value": "X"
-            },
-            {
-              "label": "Metropolitan Division Unit",
-              "value": "R"
+              "label": "Tom Lincoln",
+              "value": "TL"
             }
           ],
           "default": "A"
@@ -174,7 +170,8 @@ window.REPORT_FORM = {
           "key": "TARIH_8IB6X",
           "label": "Tarih",
           "type": "date",
-          "tooltip": "Tarih bilgisini girin."
+          "tooltip": "Tarih bilgisini girin.",
+          "today": true
         }
       ]
     },
@@ -231,10 +228,34 @@ window.REPORT_FORM = {
         {
           "key": "KKEN_394JO84",
           "label": "KÖKEN",
-          "type": "text",
-          "placeholder": "BEYAZ",
-          "hint": "Siyahi, Hispanik veya Latin, Asyalı, Beyaz, Filipinli, Orta Doğulu (OD) — Büyük harflerle yukarıya aktarın.",
-          "upper": "tr"
+          "type": "select",
+          "placeholder": "Seçim yapın.",
+          "values": [
+            {
+              "label": "Siyahi",
+              "value": "SIYAHI"
+            },
+            {
+              "label": "Hispanik veya Latin",
+              "value": "HISPANIK"
+            },
+            {
+              "label": "Asyalı",
+              "value": "ASYALI"
+            },
+            {
+              "label": "Beyaz",
+              "value": "BEYAZ"
+            },
+            {
+              "label": "Filipinli",
+              "value": "FILIPINLI"
+            },
+            {
+              "label": "Orta Doğulu",
+              "value": "ORTA DOGULU"
+            }
+          ]
         }
       ]
     },

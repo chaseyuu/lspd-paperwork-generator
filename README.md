@@ -27,6 +27,7 @@ ifadeleri formdaki değerlerle değiştirilir. Formu ekrana çizen ve raporu olu
 - Personel Bilgisi, Seri No. ve Division alanları sağ üstte seçili karakterin bilgileriyle otomatik doldurulur.
   Karakter değiştirildiğinde bu alanlar da güncellenir; elle değiştirilen bir alana dokunulmaz.
 - "Büyük harflerle yazın." açıklaması olan alanlar yazılırken otomatik olarak büyük harfe çevrilir.
+- Genel Bilgiler'deki Tarih alanı bilgisayarın o günkü tarihiyle başlar.
 
 ## Ortak tasarım
 
