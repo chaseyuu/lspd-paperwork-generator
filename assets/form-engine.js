@@ -873,6 +873,16 @@
     e.returnValue = '';
   });
 
+  var resetBtn = document.getElementById('reset-btn');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', function () {
+      if (!confirm('Formu sıfırlamak istediğinize emin misiniz? Girilen tüm veriler silinecek.')) return;
+      try { localStorage.removeItem(draftKey); } catch (e) {}
+      reportPendingCopy = false;
+      location.reload();
+    });
+  }
+
   document.getElementById('generate-btn').addEventListener('click', function () {
     if (def.required && !validate()) return;
     if (!checkRanges()) return;
