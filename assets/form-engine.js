@@ -663,12 +663,16 @@
   });
   document.addEventListener('lspd:characters-change', scheduleAuto);
 
-  /* ---------- Draft auto-save (localStorage, per page, expires after 6 hours) ----------
+  /* ---------- Draft auto-save (localStorage, per page; def.draftMaxAgeMs overrides the default
+   * 6-hour expiry, e.g. 3600000 for 1 hour) ----------
    * Recovers from an accidentally closed/reloaded tab. Saved on every change (debounced) and
    * restored once on load, after the officer-prefill pass so a saved draft wins over it; a
    * repeatable group is grown first (via its own "Ekle" button) to fit however many instances
-   * were saved. Never sent anywhere — plain browser storage, cleared automatically once stale. */
-  var DRAFT_MAX_AGE_MS = 6 * 60 * 60 * 1000;
+   * were saved. Uses localStorage, never a cookie: it is never attached to any HTTP request (a
+   * cookie is sent on every request to the site; localStorage never leaves the browser at all),
+   * it is strictly scoped to this exact origin the same way the character-prefs cookies already
+   * are, and it is still cleared automatically once stale. */
+  var DRAFT_MAX_AGE_MS = def.draftMaxAgeMs || 6 * 60 * 60 * 1000;
   var draftKey = 'lspd_draft_' + location.pathname;
   var draftTimer = null;
   function scheduleDraftSave() {

@@ -3,6 +3,7 @@ window.REPORT_FORM = {
   "emptyValue": "—",
   "title": "İhlal Raporu",
   "required": true,
+  "draftMaxAgeMs": 3600000,
   "sections": [
     {
       "title": "İhlal Türü",
