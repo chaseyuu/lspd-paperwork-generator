@@ -337,13 +337,16 @@ window.REPORT_FORM = {
 };
 
 /*
- * Açıklama, yalnızca seçilen kanunların tamamı 400-499 arasındaysa otomatik yazılır:
+ * Açıklama, seçilen kanunlardan en az biri 400-499 arasındaysa otomatik yazılır:
  * {İhlal Tarihi} tarihinde, {İhlal Saati} {Şüpheli Ad Soyadı} tarafından sürülen {Plaka} plakalı,
- * {Model} model aracın, {İhlal Konumu} üzerinde - BURAYA İHLALİ NASIL İHLAL ETTİĞİNİ KENDİNİZ YAZIN -
+ * {Model} model aracın, {İhlal Konumu} üzerinde - BURAYA KANUNU NASIL İHLAL ETTİĞİN KISACA KENDİNİZ YAZIN -
  * San Andreas Ceza Kanunu'nun {Kanunlar: numara. ad (tür)} maddesini/maddelerini ihlal etmesi üzerine
  * para cezası uygulandı.
- * İhlalin nasıl gerçekleştiğini anlatan kısım her zaman elle yazılır; metnin geri kalanı bilgi
- * girildikçe canlı yazılır. Seçilen kanunlardan biri 400-499 dışındaysa açıklama hiç yazılmaz.
+ * İhlal Konumu yazılırken yalnızca kelimelerin ilk harfi büyük geçirilir (Sinner Street); "/" ile
+ * ayrılmış birden çok konum "ile" bağlacıyla yazılır (SINNER STREET / ATLEE STREET -> Sinner Street
+ * ile Atlee Street). Kanunun nasıl ihlal edildiğini anlatan kısım her zaman elle yazılır; metnin geri
+ * kalanı bilgi girildikçe canlı yazılır. Seçilen kanunların hiçbiri 400-499 arasında değilse açıklama
+ * hiç yazılmaz.
  */
 (function () {
   var MONTHS = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
@@ -381,6 +384,13 @@ window.REPORT_FORM = {
     });
   }
 
+  // "SINNER STREET / ATLEE STREET" -> "Sinner Street ile Atlee Street"
+  function locationText(v) {
+    var raw = String(v || '').trim();
+    if (!raw) return '';
+    return raw.split('/').map(function (part) { return titleCase(part); }).filter(Boolean).join(' ile ');
+  }
+
   // "401,410" -> "401. ... (M) ve 410. ... (I)"
   function chargeList(ids) {
     var code = window.PENAL_CODE || [], seen = [], parts = [];
@@ -399,19 +409,19 @@ window.REPORT_FORM = {
     build: function (v) {
       var ids = String(v.SUCLAMA || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
       if (!ids.length) return '';
-      // Yalnızca seçilen kanunların tamamı 400-499 aralığındaysa açıklama otomatik yazılır.
-      var allInRange = ids.every(function (id) {
+      // Seçilen kanunlardan en az biri 400-499 aralığındaysa açıklama otomatik yazılır.
+      var anyInRange = ids.some(function (id) {
         var n = parseInt(id, 10);
         return n >= 400 && n <= 499;
       });
-      if (!allInRange) return '';
+      if (!anyInRange) return '';
       var parts = {
         date: longDate(v.HLAL_TARIH_538EMNO),
         time: timeWithSuffix(v.HLAL_SAATI_13562E),
         name: titleCase(v.AD_SOYADI_2911L1G),
         plate: String(v.PLAKA_2667IPU || '').trim().toLocaleUpperCase('en-US'),
         model: titleCase(v.MODEL_2555NYG),
-        location: String(v.HLAL_KONUMU_4493B3H || '').trim().toLocaleUpperCase('en-US'),
+        location: locationText(v.HLAL_KONUMU_4493B3H),
         charges: chargeList(ids),
       };
       // Live preview: written as soon as any piece is known; missing pieces show as {Alan}.
@@ -422,7 +432,7 @@ window.REPORT_FORM = {
       return p('date', 'İhlal Tarihi') + ' tarihinde, ' + p('time', 'İhlal Saati') + ' ' + p('name', 'Şüpheli Ad Soyadı') +
         ' tarafından sürülen ' + p('plate', 'Plaka') + ' plakalı, ' + p('model', 'Model') +
         ' model aracın, ' + p('location', 'İhlal Konumu') +
-        " üzerinde - BURAYA İHLALİ NASIL İHLAL ETTİĞİNİ KENDİNİZ YAZIN - San Andreas Ceza Kanunu'nun " +
+        " üzerinde - BURAYA KANUNU NASIL İHLAL ETTİĞİN KISACA KENDİNİZ YAZIN - San Andreas Ceza Kanunu'nun " +
         p('charges', 'Kanunlar') + ' ' + madde + ' ihlal etmesi üzerine para cezası uygulandı.';
     },
   };

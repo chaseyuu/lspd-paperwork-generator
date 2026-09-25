@@ -42,14 +42,17 @@ ifadeleri formdaki değerlerle değiştirilir. Formu ekrana çizen ve raporu olu
   Misdemeanor maddeler menüde görünmez. **Trafik** ve **Trafik Dışı** kutucukları elle işaretlenir
   (kilitli değildir); **Misdemeanor** kutucuğu ise kilitlidir ve yalnızca seçilen kanunlara göre
   otomatik işaretlenir: herhangi bir Misdemeanor madde seçildiğinde işaretlenir. İhlal Raporu'ndaki
-  **Açıklama** alanı yalnızca seçilen kanunların **tamamı 400–499 aralığındaysa** canlı olarak
-  otomatik yazılır (örn: *25 Eylül 2026 tarihinde, 1312'de Jonathan Mendez tarafından sürülen JBC123
-  plakalı, Scout model aracın, Sinner Street üzerinde - BURAYA İHLALİ NASIL İHLAL ETTİĞİNİ KENDİNİZ
+  **Açıklama** alanı, seçilen kanunlardan **en az biri 400–499 aralığındaysa** canlı olarak otomatik
+  yazılır (örn: *25 Eylül 2026 tarihinde, 1312'de Jonathan Mendez tarafından sürülen JBC123 plakalı,
+  Scout model aracın, Sinner Street üzerinde - BURAYA KANUNU NASIL İHLAL ETTİĞİN KISACA KENDİNİZ
   YAZIN - San Andreas Ceza Kanunu'nun 410. Hız İhlali (I) maddesini ihlal etmesi üzerine para cezası
-  uygulandı.*); seçilen kanunlardan biri bu aralığın dışındaysa (örn. bir Misdemeanor madde) açıklama
-  hiç yazılmaz ve tamamen elle girilir. "BURAYA İHLALİ NASIL İHLAL ETTİĞİNİ KENDİNİZ YAZIN" kısmı her
-  durumda elle doldurulmalıdır; bu kısmı düzenlemek (veya kutuyu herhangi bir şekilde elle
-  değiştirmek) otomatik yazımı durdurur, kutu temizlenirse yeniden başlar. İhlal Raporu'nun sonuç
+  uygulandı.*); İhlal Konumu yazılırken yalnızca kelimelerin ilk harfi büyük geçirilir (Sinner
+  Street); "/" ile ayrılmış birden çok konum "ile" bağlacıyla yazılır (SINNER STREET / ATLEE STREET
+  -> *Sinner Street ile Atlee Street*). Seçilen kanunların hiçbiri bu aralıkta değilse (örn. yalnızca
+  bir Misdemeanor madde) açıklama hiç yazılmaz ve tamamen elle girilir. "BURAYA KANUNU NASIL İHLAL
+  ETTİĞİN KISACA KENDİNİZ YAZIN" kısmı her durumda elle doldurulmalıdır; bu kısmı düzenlemek (veya
+  kutuyu herhangi bir şekilde elle değiştirmek) otomatik yazımı durdurur, kutu temizlenirse yeniden
+  başlar. İhlal Raporu'nun sonuç
   ekranında Araç El Koyma Formu'ndaki gibi bir rapor başlığı çıktısı yoktur; yalnızca raporun kaynak
   kodu gösterilir.
 
