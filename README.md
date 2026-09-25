@@ -41,6 +41,8 @@ Kartı'nda olduğu gibi) çıktı ham BBCode metni olarak üretilir.
   Bilgisi/Memur, Seri No., Division) bu kısıtlamadan etkilenmez.
 - Genel Bilgiler'deki Tarih alanı bilgisayarın o günkü tarihiyle başlar.
 - Boş bırakılan alanlar raporda `—` olarak yazılır.
+- Her bölümün başlığı kendi kutusunun (panelin) dışında, üstünde gösterilir; kutular arasında makul
+  boşluk bırakılır. Bu genel `assets/form-engine.js` davranışı olduğu için tüm raporlarda geçerlidir.
 - Araç El Koyma Formu ve İhlal Raporu'nda **tüm alanlar zorunludur** (otomatik doldurulan/kilitli
   alanlar hariç). Boş bir alanla **Oluştur**'a basılırsa rapor oluşturulmaz; boş alanın kutusu
   turuncu ile vurgulanır ve altında "Bu alan zorunludur." (Kanunlar için "En az bir kanun
@@ -81,18 +83,24 @@ Kartı'nda olduğu gibi) çıktı ham BBCode metni olarak üretilir.
   Diğer tüm alanlar da (Cinsiyet, Kişi Bilgisi ve Görevlendirme hariç, bunlar seçmelidir) elle
   doldurulur; boş bırakılırlarsa raporda `—` yazılır.
 - **Olay Raporu** çıktısı da Field Interview Kartı gibi **BBCode**'dur ve **alanlar zorunlu değildir**;
-  boş bırakılan herhangi bir alan raporda otomatik olarak `—` yazılır. Personel Bilgileri'ndeki
-  Adı Soyadı, Seri No. ve Division sağ üstte seçili karakterle otomatik doldurulur; Tarih bilgisayarın
-  o günkü tarihiyle başlar. **Olay Türü** (Araç Takibi, Silahlı Saldırı, Cinayet, Çete Bağlantılı,
-  Narkotik, Hırsızlık, Trafik Kazası, Diğer) kendi kutusunda ayrı ayrı **checkbox** olarak işaretlenir;
-  işaretlenen her kutu raporda `[cb]` yerine `[cbc]` olarak yazılır, işaretlenmeyenler `[cb]` (Hayır)
-  kalır. **İlgili Kişi** bölümü varsayılan olarak 2 kişi ile başlar; **Kişi Ekle** düğmesiyle en fazla
-  5 kişiye kadar "İlgili Kişi (3)", "(4)", "(5)" olarak çoğaltılabilir (yalnızca son eklenen kişi
-  **Kaldır** ile geri çıkarılabilir, böylece numaralandırma bozulmaz). Her kişinin Adı Soyadı,
-  İletişim Bilgisi ve Adresi kutuları boşken hazır olarak `—` gösterir; **Statü** varsayılan olarak
-  **Hiçbiri**'dir. **Açıklama** bölümündeki Süreç kutucukları (Güç Kullanıldı, Tutuklama Yapıldı vb.)
-  varsayılan olarak **Hayır**'dır. Kanıtlar bölümü en fazla 5 kanıt başlığı/içeriği çiftini kabul eder;
-  boş bırakılan çiftler raporda `—` olarak görünür.
+  boş bırakılan herhangi bir alan raporda otomatik olarak `—` yazılır. Rapor No. varsayılan olarak
+  `00000` ile, Personel Bilgileri'ndeki Adı Soyadı/Seri No./Division sağ üstte seçili karakterle,
+  Tarih bilgisayarın o günkü tarihiyle otomatik doldurulur/başlar. **Olay Türü** (Araç Takibi, Silahlı
+  Saldırı, Cinayet, Çete Bağlantılı, Narkotik, Hırsızlık, Trafik Kazası, Diğer) kendi kutusunda ayrı
+  ayrı **checkbox** olarak işaretlenir; işaretlenen her kutu raporda `[cb]` yerine `[cbc]` olarak
+  yazılır, işaretlenmeyenler `[cb]` (Hayır) kalır. **İlgili Kişi** bölümü tek bir kutu içinde, her
+  kişiyi kendi ince kenarlıklı kartında gösterir (MDCPanel'deki "Involved People" kutu tasarımına
+  benzer); varsayılan 2 kişiyle başlar, **Kişi Ekle** ile en fazla 5 kişiye kadar çoğaltılabilir.
+  Her kişinin Adı Soyadı, İletişim Bilgisi ve Adresi kutuları boşken hazır olarak `—` gösterir;
+  **Statü** varsayılan olarak **Hiçbiri**'dir. **Açıklama** bölümündeki Süreç kutucukları (Güç
+  Kullanıldı, Tutuklama Yapıldı vb.) varsayılan olarak **Hayır**'dır. **Kanıtlar** bölümü varsayılan
+  5 kanıt başlığı/içeriği çiftiyle başlar, **Kanıt Ekle** ile en fazla 10'a kadar çoğaltılabilir;
+  **Kanıt Başlığı** artık serbest metin değil, forumda kullanılan 15 standart başlıktan (Olay Raporu,
+  İfade Raporu, Evidence Locker Kaydı, CCTV/DICVS/BWV Görüntüsü, FSD İnceleme Raporları, APB, Coroner
+  Raporu vb.) birini seçtiren aramalı bir seçim kutusudur; boş bırakılan çiftler raporda `—` olarak
+  görünür. Bir kişi/kanıt eklendikten sonra yalnızca **en son eklenen** geri kaldırılabilir (böylece
+  numaralandırma bozulmaz); kaldırma düğmesi sürekli görünmez, yalnızca ilgili kart/satırın üzerine
+  gelindiğinde belirir.
 
 ## Ortak tasarım
 
