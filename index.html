@@ -24,7 +24,7 @@
     </div>
   </header>
 
-  <img class="watermark" src="/lspd-tools/img/lspd.webp" alt="" aria-hidden="true">
+  <img class="watermark" src="/lspd-tools/img/lspd-seal.webp" alt="" aria-hidden="true">
 
   <main>
     <h1 class="page-title">Rapor Oluşturucu</h1>
@@ -86,7 +86,7 @@
 
     <h2 class="section-title">Özel Raporlar</h2>
     <nav class="tools cols-3" aria-label="Özel rapor türleri">
-      <a class="tool" href="ppo-degerlendirme-raporu/">
+      <a class="tool" href="ppo-degerlendirme-raporu/" data-pin="FTOPPO">
         <span class="tool-icon" style="--icon:#facc15" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         </span>
@@ -97,5 +97,74 @@
       </a>
     </nav>
   </main>
+
+  <div class="modal-overlay" id="pin-modal" hidden>
+    <section class="panel modal-box" aria-labelledby="pin-modal-title">
+      <h2 id="pin-modal-title">Bu rapor korumalıdır</h2>
+      <p class="panel-desc">Devam etmek için PIN girin.</p>
+      <div class="field">
+        <label for="pin-modal-input">PIN</label>
+        <input class="input" id="pin-modal-input" type="password" autocomplete="off" placeholder="PIN">
+      </div>
+      <p class="modal-error" id="pin-modal-error"></p>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="pin-modal-cancel">Vazgeç</button>
+        <button type="button" class="btn btn-primary" id="pin-modal-submit">Aç</button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      var modal = document.getElementById('pin-modal');
+      var input = document.getElementById('pin-modal-input');
+      var error = document.getElementById('pin-modal-error');
+      var submitBtn = document.getElementById('pin-modal-submit');
+      var cancelBtn = document.getElementById('pin-modal-cancel');
+      var pendingLink = null;
+
+      document.querySelectorAll('.tool[data-pin]').forEach(function (link) {
+        link.addEventListener('click', function (e) {
+          e.preventDefault();
+          pendingLink = link;
+          error.textContent = '';
+          input.value = '';
+          modal.hidden = false;
+          input.focus();
+        });
+      });
+
+      function closeModal() {
+        modal.hidden = true;
+        pendingLink = null;
+      }
+
+      function trySubmit() {
+        if (pendingLink && input.value === pendingLink.getAttribute('data-pin')) {
+          var href = pendingLink.getAttribute('href');
+          closeModal();
+          window.location.href = href;
+        } else {
+          error.textContent = 'PIN yanlış.';
+          input.select();
+        }
+      }
+
+      submitBtn.addEventListener('click', trySubmit);
+      cancelBtn.addEventListener('click', closeModal);
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') trySubmit();
+      });
+      input.addEventListener('input', function () {
+        error.textContent = '';
+      });
+      modal.addEventListener('click', function (e) {
+        if (e.target === modal) closeModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && !modal.hidden) closeModal();
+      });
+    })();
+  </script>
 </body>
 </html>
