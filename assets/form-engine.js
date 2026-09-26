@@ -322,6 +322,7 @@
       });
       tgWrap.appendChild(tgBtn);
       if (f.hint) tgWrap.appendChild(el('p', { class: 'hint' }, esc(f.hint)));
+      if (f.showWhen) conditionals.push({ wrap: tgWrap, conds: Array.isArray(f.showWhen) ? f.showWhen : [f.showWhen] });
       return {
         wrap: tgWrap,
         ctrl: {
@@ -702,6 +703,25 @@
   def.sections.forEach(function (section, si) {
     if (section.group) { buildGroupSection(section); return; }
     var panel = titledPanel(section.title, { id: 'sec-' + si });
+    // section.dualColumn: two independent stacked columns (f.side: "left"/"right", default "left")
+    // instead of the usual checkerboard auto-flow grid — each side keeps its own fields together
+    // regardless of how many of them are conditionally hidden at a given moment.
+    if (section.dualColumn) {
+      var dualWrap = el('div', { class: 'dual-column-wrap' });
+      var leftGrid = el('div', { class: 'field-grid dual-column' });
+      var rightGrid = el('div', { class: 'field-grid dual-column' });
+      dualWrap.appendChild(leftGrid);
+      dualWrap.appendChild(rightGrid);
+      section.fields.forEach(function (f) {
+        var built = buildField(f);
+        built.ctrl.field = f;
+        built.ctrl.wrap = built.wrap;
+        if (f.key) controls[f.key] = built.ctrl;
+        (f.side === 'right' ? rightGrid : leftGrid).appendChild(built.wrap);
+      });
+      panel.appendChild(dualWrap);
+      return;
+    }
     var grid = el('div', { class: 'field-grid' + (section.cols === 3 ? ' cols-3' : '') });
     section.fields.forEach(function (f) {
       var built = buildField(f);
