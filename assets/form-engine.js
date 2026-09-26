@@ -653,9 +653,20 @@
       groupRoot = panel2.parentNode;
       var grid2 = el('div', { class: 'field-grid' + (section.cols === 3 ? ' cols-3' : '') });
       panel2.appendChild(grid2);
+      // section.sharedFields: plain (non-repeating) fields shown once, above the repeatable rows,
+      // in the same bordered box — e.g. a toggle that gates the group's own visibility, which
+      // couldn't gate itself if it only existed inside a conditionally-hidden row.
+      (section.sharedFields || []).forEach(function (f) {
+        var built = buildField(f);
+        built.ctrl.field = f;
+        built.ctrl.wrap = built.wrap;
+        if (f.key) controls[f.key] = built.ctrl;
+        grid2.appendChild(built.wrap);
+      });
       var addRowWrap = el('div', { class: 'field span-all group-add-inline' });
       addRowWrap.appendChild(addBtn);
       grid2.appendChild(addRowWrap);
+      if (section.showWhen) conditionals.push({ wrap: addRowWrap, conds: Array.isArray(section.showWhen) ? section.showWhen : [section.showWhen] });
       var entries = [];   // { node, removeBtn }
 
       function refreshRemovable2() {
@@ -669,6 +680,7 @@
         // One "row" wrapping this instance's own fields (in their own nested grid), so hovering
         // anywhere over the pair — not just the remove button itself — reveals the remove button.
         var item = el('div', { class: 'field span-all group-inline-item' });
+        if (section.showWhen) conditionals.push({ wrap: item, conds: Array.isArray(section.showWhen) ? section.showWhen : [section.showWhen] });
         var itemGrid = el('div', { class: 'field-grid' + (section.cols === 3 ? ' cols-3' : '') });
         item.appendChild(itemGrid);
         fieldDefsFor(n).forEach(function (f) {
@@ -705,7 +717,6 @@
       });
     }
 
-    if (section.showWhen) conditionals.push({ wrap: groupRoot, conds: Array.isArray(section.showWhen) ? section.showWhen : [section.showWhen] });
     groups.push({ def: section, getCount: function () { return count; }, addOne: function () { addBtn.click(); } });
   }
 

@@ -364,32 +364,29 @@ window.REPORT_FORM = {
           "rows": 10,
           "span": "all",
           "hideLabel": true,
-          "hint": "Tutuklamaya götüren olayları, kullanılan gücü ve şüphelinin müdahaleye uyumunu kronolojik olarak anlatın. Kayıt & Kanıt İşlemleri kutusundaki durum buraya canlı olarak otomatik eklenir."
+          "hint": "Tutuklamaya götüren olayları, kullanılan gücü ve şüphelinin müdahaleye uyumunu kronolojik olarak anlatın. Kayıt İşlemleri ve El Koyulan Materyal kutularındaki durum buraya canlı olarak otomatik eklenir."
         }
       ]
     },
     {
-      "title": "Kayıt & Kanıt İşlemleri",
-      "dualColumn": true,
+      "title": "Kayıt İşlemleri",
+      "cols": 2,
       "fields": [
         {
           "key": "KAYIT_ISLEMLERI",
           "label": "Kayıt İşlemleri",
-          "type": "toggle",
-          "side": "left"
+          "type": "toggle"
         },
         {
           "key": "BOOKING_SAAT",
           "label": "Booking Saati",
           "type": "time",
-          "side": "left",
           "showWhen": { "key": "KAYIT_ISLEMLERI", "equals": "Evet" }
         },
         {
           "key": "BOOKING_KENDIM_YAPTIM",
           "label": "Kendim Yaptım",
           "type": "toggle",
-          "side": "left",
           "showWhen": { "key": "KAYIT_ISLEMLERI", "equals": "Evet" }
         },
         {
@@ -398,7 +395,6 @@ window.REPORT_FORM = {
           "type": "text",
           "placeholder": "JOHN DOE",
           "upper": "en",
-          "side": "left",
           "lookupTarget": "BOOKING_MEMUR_SERI_NO",
           "lookup": tutuklamaSeriLookup,
           "showWhen": [
@@ -411,7 +407,6 @@ window.REPORT_FORM = {
           "label": "Booking Yapan Memur Seri No.",
           "type": "text",
           "placeholder": "00000",
-          "side": "left",
           "hint": "Adı Soyadı Sworn Roster'da bulunursa otomatik doldurulur.",
           "showWhen": [
             { "key": "KAYIT_ISLEMLERI", "equals": "Evet" },
@@ -423,7 +418,6 @@ window.REPORT_FORM = {
           "label": "Booking Yapan Memur Rütbe",
           "type": "select",
           "placeholder": "Seçim Yapın",
-          "side": "left",
           "values": [
             { "label": "Officer", "value": "Officer" },
             { "label": "Detective", "value": "Detective" },
@@ -435,20 +429,6 @@ window.REPORT_FORM = {
             { "key": "KAYIT_ISLEMLERI", "equals": "Evet" },
             { "key": "BOOKING_KENDIM_YAPTIM", "equals": "Hayır" }
           ]
-        },
-        {
-          "key": "KANIT_TESLIM",
-          "label": "Kanıt Teslim Etme",
-          "type": "toggle",
-          "side": "right"
-        },
-        {
-          "key": "EVIDENCE_KAYIT_NO",
-          "label": "Evidence Kayıt Numarası",
-          "type": "text",
-          "placeholder": "EV-20260616-173",
-          "side": "right",
-          "showWhen": { "key": "KANIT_TESLIM", "equals": "Evet" }
         },
         {
           "key": "KAYIT_ANLATI_74HXQ2",
@@ -474,6 +454,21 @@ window.REPORT_FORM = {
       "target": "MATERYAL_DUMMY_TARGET",
       "joinWith": "",
       "blockTemplate": "",
+      "sharedFields": [
+        {
+          "key": "KANIT_TESLIM",
+          "label": "Kanıt Teslim Etme",
+          "type": "toggle",
+          "span": "all"
+        },
+        {
+          "key": "EVIDENCE_KAYIT_NO",
+          "label": "Evidence Kayıt Numarası",
+          "type": "text",
+          "placeholder": "EV-20260616-173",
+          "showWhen": { "key": "KANIT_TESLIM", "equals": "Evet" }
+        }
+      ],
       "fields": [
         {
           "suffix": "TUR",
