@@ -847,6 +847,12 @@
     }
     scheduleAuto();
   });
+  // Fallback for native date/time/number inputs: some embedded browsers (e.g. FiveM's CEF-based
+  // NUI) don't reliably fire 'input' while a segment (hour/minute) changes, only 'change' once the
+  // control loses focus or the value is otherwise committed.
+  form.addEventListener('change', function (e) {
+    if (e.target && (e.target.type === 'time' || e.target.type === 'date' || e.target.type === 'number')) scheduleAuto();
+  });
   document.addEventListener('lspd:characters-change', scheduleAuto);
 
   /* ---------- Draft auto-save (localStorage, per page; def.draftMaxAgeMs overrides the default
