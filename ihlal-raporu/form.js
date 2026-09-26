@@ -433,12 +433,12 @@ window.REPORT_FORM = {
       var any = parts.date || parts.time || parts.name || parts.plate || parts.model || parts.location || parts.charges;
       if (!any) return '';
       function p(k, label) { return parts[k] || '{' + label + '}'; }
-      var madde = ids.length > 1 ? 'maddelerini' : 'maddesini';
+      var madde = ids.length > 1 ? 'maddelerinden' : 'maddesinden';
       return p('date', 'İhlal Tarihi') + ' tarihinde, ' + p('time', 'İhlal Saati') + ' ' + p('name', 'Şüpheli Ad Soyadı') +
         ' tarafından sürülen ' + p('plate', 'Plaka') + ' plakalı, ' + p('model', 'Model') +
         ' model aracın, ' + p('location', 'İhlal Konumu') +
         " üzerinde - BURAYA KANUNU NASIL İHLAL ETTİĞİN KISACA KENDİNİZ YAZIN - San Andreas Ceza Kanunu'nun " +
-        p('charges', 'Kanunlar') + ' ' + madde + ' ihlal etmesi üzerine para cezası uygulandı.';
+        p('charges', 'Kanunlar') + ' ' + madde + ' para cezası uygulandı.';
     },
   };
 })();
