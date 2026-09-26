@@ -55,6 +55,7 @@
   var LOCK = '<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
   var HELP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>';
   var CLIPBOARD = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>';
+  var XMARK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
 
   function esc(s) {
     return String(s).replace(/[&<>"']/g, function (c) {
@@ -69,6 +70,7 @@
   }
 
   var controls = {};   // key -> { get(), set(v), field }
+  var conditionals = [];   // fields with f.showWhen: {wrap, key, equals}
   var groups = [];      // repeatable field groups (def.sections entries with group:true)
   var form = document.getElementById('report-form');
 
@@ -291,6 +293,45 @@
       };
     }
 
+    if (f.type === 'toggle') {
+      var tgWrap = el('div', { class: 'field toggle-field' + (f.span === 'all' ? ' span-all' : '') });
+      if (!f.hideLabel) {
+        var tgLabelRow = el('div', { class: 'label-row' });
+        tgLabelRow.appendChild(el('label', {}, esc(f.label)));
+        tgWrap.appendChild(tgLabelRow);
+      }
+      var onLabel = f.onLabel || 'Evet', offLabel = f.offLabel || 'Hayır';
+      var isOn = f.default === true || f.default === onLabel;
+      var tgBtn = el('button', { type: 'button', id: id, class: 'toggle-switch', role: 'switch' });
+      var tgKnob = el('span', { class: 'toggle-knob' });
+      var tgText = el('span', { class: 'toggle-text' });
+      tgBtn.appendChild(tgKnob);
+      tgBtn.appendChild(tgText);
+      function renderToggle() {
+        tgBtn.classList.toggle('on', isOn);
+        tgBtn.setAttribute('aria-checked', String(isOn));
+        tgKnob.innerHTML = isOn ? CHECK : XMARK;
+        tgText.textContent = isOn ? onLabel : offLabel;
+      }
+      renderToggle();
+      tgBtn.addEventListener('click', function () {
+        isOn = !isOn;
+        renderToggle();
+        updateConditionals();
+        scheduleAuto();
+      });
+      tgWrap.appendChild(tgBtn);
+      if (f.hint) tgWrap.appendChild(el('p', { class: 'hint' }, esc(f.hint)));
+      return {
+        wrap: tgWrap,
+        ctrl: {
+          get: function () { return isOn ? onLabel : offLabel; },
+          set: function (v) { isOn = v === onLabel || v === true; renderToggle(); },
+          focusEl: tgBtn,
+        },
+      };
+    }
+
     if (f.type === 'copylist') {
       // Reference text, not a real input: not registered under any key, never validated, never
       // saved in a draft, never written to the report. Each line gets its own quiet copy-to-
@@ -407,7 +448,14 @@
         ctrl = { get: function () { return input.value; }, set: function (v) { input.value = v || ''; }, focusEl: input, input: input };
     }
     if (f.hint) wrap.appendChild(el('p', { class: 'hint' }, esc(f.hint)));
+    if (f.showWhen) conditionals.push({ wrap: wrap, key: f.showWhen.key, equals: f.showWhen.equals });
     return { wrap: wrap, ctrl: ctrl };
+  }
+  function updateConditionals() {
+    conditionals.forEach(function (c) {
+      var ctrl = controls[c.key];
+      c.wrap.hidden = !(ctrl && ctrl.get() === c.equals);
+    });
   }
 
   /* ---------- Panel with an external title ----------
@@ -755,6 +803,7 @@
 
   prefill();
   loadDraft();
+  updateConditionals();
   scheduleAuto();
   document.addEventListener('lspd:characters-change', prefill);
 
@@ -813,7 +862,7 @@
     var first = null;
     Object.keys(controls).forEach(function (key) {
       var c = controls[key];
-      if (c.field.locked || c.noOutput) return;   // filled from another field / not a real input
+      if (c.field.locked || c.noOutput || (c.wrap && c.wrap.hidden)) return;   // filled from another field / not a real input / conditionally hidden
       var empty = !String(c.get() || '').trim();
       c.wrap.classList.toggle('invalid', empty);
       var msg = c.wrap.querySelector('.error-msg');
@@ -900,6 +949,19 @@
     if (titleInput) titleInput.value = fill(def.titleTemplate || '', vals, false);
     var code = document.getElementById('result-code');
     if (code) code.value = output;
+    var secOut = def.secondaryOutput;
+    var secSection = document.getElementById('secondary-output-section');
+    if (secOut && secSection) {
+      var show = controls[secOut.showField] && controls[secOut.showField].get() === secOut.showValue;
+      secSection.hidden = !show;
+      if (show) {
+        var secVals = {};
+        for (var sk in vals) secVals[sk] = vals[sk];
+        if (typeof def.sendUrl === 'function') secVals.ARREST_REPORT_LINK = def.sendUrl(vals);
+        var secCode = document.getElementById('result-code-2');
+        if (secCode) secCode.value = fill(secOut.template, secVals, false);
+      }
+    }
     formView.hidden = true;
     resultView.hidden = false;
     reportPendingCopy = true;
@@ -920,6 +982,13 @@
   document.getElementById('copy-btn').addEventListener('click', function () {
     copy(output).then(function () { showStatus('Rapor kopyalandı.'); reportPendingCopy = false; });
   });
+  var copyCode2Btn = document.getElementById('copy-code-2-btn');
+  if (copyCode2Btn) {
+    copyCode2Btn.addEventListener('click', function () {
+      var secCode = document.getElementById('result-code-2');
+      copy(secCode ? secCode.value : '').then(function () { showStatus('Inmate Check kopyalandı.'); });
+    });
+  }
   var sendBtn = document.getElementById('send-btn');
   if (sendBtn) {
     sendBtn.addEventListener('click', function () {

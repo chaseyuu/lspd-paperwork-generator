@@ -33,6 +33,24 @@
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
 }
 
+/* Evet/Hayır switch (e.g. Inmate Check). */
+.toggle-switch {
+  display: inline-flex; align-items: center; gap: 8px;
+  width: 148px; height: 40px; padding: 4px;
+  border: none; border-radius: 999px; cursor: pointer;
+  background: var(--destructive);
+  transition: background .15s ease;
+}
+.toggle-switch.on { background: var(--success); flex-direction: row-reverse; }
+.toggle-knob {
+  flex: none; width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: #fff; color: var(--destructive);
+}
+.toggle-switch.on .toggle-knob { color: var(--success); }
+.toggle-knob svg { width: 16px; height: 16px; }
+.toggle-text { flex: 1; text-align: center; color: #fff; font-weight: 600; font-size: .875rem; }
+
 /* Panel with an external title: the h2 sits above the bordered box (not as its first line), and
    this block's own margin gives consistent, reasonable breathing room to the next boxed section —
    used for every section/group panel the engine builds. */
