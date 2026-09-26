@@ -405,6 +405,19 @@
               inputmode: f.type === 'number' ? 'numeric' : null,
               autocomplete: 'off', autocapitalize: 'off', 'data-lpignore': 'true', 'data-1p-ignore': 'true', 'data-form-type': 'other',
             });
+        // f.copyable: a small copy-to-clipboard icon next to the label (same one-shot icon-flash
+        // feedback as the evidence list's per-line copy button), for a box whose whole point is to
+        // be copied elsewhere (e.g. an auto-written narrative) rather than filled in by hand.
+        if (f.copyable && labelRow) {
+          var copyFieldBtn = el('button', { type: 'button', class: 'btn icon-btn field-copy-btn', 'aria-label': 'Kopyala', title: 'Kopyala' }, CLIPBOARD);
+          copyFieldBtn.addEventListener('click', function () {
+            copy(input.value).then(function () {
+              copyFieldBtn.innerHTML = CHECK;
+              setTimeout(function () { copyFieldBtn.innerHTML = CLIPBOARD; }, 900);
+            });
+          });
+          labelRow.appendChild(copyFieldBtn);
+        }
         // Readonly until the user actually focuses the field: browsers do not autofill readonly
         // inputs, so this blocks the page-load autofill pass that would otherwise overwrite a
         // "name"/"address"-labelled field with the browser's saved real (OOC) profile data.
@@ -715,6 +728,15 @@
         refreshRemovable2();
         scheduleAuto();
       });
+      // section.sharedFieldsAfter: like sharedFields, but placed below the repeatable rows and
+      // the "Ekle" button instead of above them (e.g. a live summary of the whole list).
+      (section.sharedFieldsAfter || []).forEach(function (f) {
+        var built = buildField(f);
+        built.ctrl.field = f;
+        built.ctrl.wrap = built.wrap;
+        if (f.key) controls[f.key] = built.ctrl;
+        grid2.appendChild(built.wrap);
+      });
     }
 
     groups.push({ def: section, getCount: function () { return count; }, addOne: function () { addBtn.click(); } });
@@ -793,17 +815,21 @@
     updateAuto();
     updateAutoAppend();
   }
+  // def.autoText may be a single {target, build, alwaysLive} config, or an array of them —
+  // each box is kept in sync independently, using the same hand-edit rules per config.
+  var autoTextConfigs = !def.autoText ? [] : (Array.isArray(def.autoText) ? def.autoText : [def.autoText]);
   function updateAuto() {
-    if (!def.autoText) return;
-    var target = controls[def.autoText.target];
-    if (!target || !target.input) return;
-    var input = target.input;
-    if (!def.autoText.alwaysLive && input.value && !input.dataset.autotext) return;   // edited by hand
-    var raw = {};
-    Object.keys(controls).forEach(function (k) { raw[k] = controls[k].get(); });
-    var text = def.autoText.build(raw) || '';
-    input.value = text;
-    if (text) input.dataset.autotext = '1'; else delete input.dataset.autotext;
+    autoTextConfigs.forEach(function (cfg) {
+      var target = controls[cfg.target];
+      if (!target || !target.input) return;
+      var input = target.input;
+      if (!cfg.alwaysLive && input.value && !input.dataset.autotext) return;   // edited by hand
+      var raw = {};
+      Object.keys(controls).forEach(function (k) { raw[k] = controls[k].get(); });
+      var text = cfg.build(raw) || '';
+      input.value = text;
+      if (text) input.dataset.autotext = '1'; else delete input.dataset.autotext;
+    });
   }
   /* ---------- Text kept in sync inside another (free-typed) field (def.autoAppend) ----------
    * Unlike autoText, this doesn't own the whole box — it tracks just its own block (marked with a
@@ -863,10 +889,10 @@
     autoAppendLast[cfg.target] = newBlock;
   }
   form.addEventListener('input', function (e) {
-    var target = def.autoText && controls[def.autoText.target];
-    if (target && e.target === target.input) {
-      if (def.autoText.alwaysLive) { scheduleAuto(); return; }
-      if (target.input.value) delete target.input.dataset.autotext; else scheduleAuto();
+    var autoTextCfg = autoTextConfigs.filter(function (c) { var t = controls[c.target]; return t && e.target === t.input; })[0];
+    if (autoTextCfg) {
+      if (autoTextCfg.alwaysLive) { scheduleAuto(); return; }
+      if (e.target.value) delete e.target.dataset.autotext; else scheduleAuto();
       return;
     }
     scheduleAuto();
