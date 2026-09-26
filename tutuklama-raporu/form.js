@@ -39,7 +39,9 @@ var TUTUKLAMA_MATERYAL_TIPLERI = {
   'Yarı Otomatik Tüfek': { acc: 'yarı otomatik tüfeği', gram: false },
   'Pompalı Tüfek': { acc: 'pompalı tüfeği', gram: false },
   'Tam Otomatik Tüfek': { acc: 'tam otomatik tüfeği', gram: false },
-  'Kontrollü Madde': { acc: 'kontrollü maddeyi', gram: true }
+  'Kontrollü Madde': { acc: 'kontrollü maddeyi', gram: true },
+  'Cep Telefonu': { acc: 'model telefonu', gram: false },
+  'Diğer': { acc: 'adlı eşyayı', gram: false }
 };
 /* "Şüpheliye ait beş gram PCP kontrollü maddeyi ve bir tane Vom Feuer 19 tabancayı, Property
    Room'a EV-20260616-173 kayıt numarası ile teslim ettim." — MATERYAL_1_*, MATERYAL_2_* ...
@@ -491,7 +493,9 @@ window.REPORT_FORM = {
             { "label": "Yarı Otomatik Tüfek", "value": "Yarı Otomatik Tüfek" },
             { "label": "Pompalı Tüfek", "value": "Pompalı Tüfek" },
             { "label": "Tam Otomatik Tüfek", "value": "Tam Otomatik Tüfek" },
-            { "label": "Kontrollü Madde", "value": "Kontrollü Madde" }
+            { "label": "Kontrollü Madde", "value": "Kontrollü Madde" },
+            { "label": "Cep Telefonu", "value": "Cep Telefonu" },
+            { "label": "Diğer", "value": "Diğer" }
           ]
         },
         {
