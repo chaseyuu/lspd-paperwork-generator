@@ -763,8 +763,12 @@
   var autoTimer = null;
   function scheduleAuto() {
     clearTimeout(autoTimer);
-    autoTimer = setTimeout(updateAuto, 0);
+    autoTimer = setTimeout(runAuto, 0);
     scheduleDraftSave();
+  }
+  function runAuto() {
+    updateAuto();
+    updateAutoAppend();
   }
   function updateAuto() {
     if (!def.autoText) return;
@@ -777,6 +781,35 @@
     var text = def.autoText.build(raw) || '';
     input.value = text;
     if (text) input.dataset.autotext = '1'; else delete input.dataset.autotext;
+  }
+  /* ---------- Text kept appended to the end of another (free-typed) field (def.autoAppend) ----------
+   * Unlike autoText, this NEVER stops just because the user has typed their own text in the target
+   * box — it always keeps its own block in sync at the very end, regardless of what they've written
+   * above it, or when. A zero-width space marks exactly where the auto block starts; everything
+   * before it is the user's own text (left untouched), everything from it onward is replaced on every
+   * recompute. The marker rides along inside the field's own value, so it survives a page reload from
+   * a saved draft with no extra bookkeeping, and is invisible wherever the report ends up. */
+  var AUTOAPPEND_MARKER = '​';
+  function updateAutoAppend() {
+    if (!def.autoAppend) return;
+    var cfg = def.autoAppend;
+    var target = controls[cfg.target];
+    if (!target || !target.input) return;
+    var input = target.input;
+    var raw = {};
+    Object.keys(controls).forEach(function (k) { raw[k] = controls[k].get(); });
+    var text = cfg.build(raw) || '';
+    var sep = cfg.separator != null ? cfg.separator : '\n\n';
+    var current = input.value;
+    var markerIdx = current.indexOf(AUTOAPPEND_MARKER);
+    var base = (markerIdx >= 0 ? current.slice(0, markerIdx) : current).replace(/\s+$/, '');
+    var newValue = text ? (base ? base + sep + AUTOAPPEND_MARKER + text : AUTOAPPEND_MARKER + text) : base;
+    if (newValue !== current) {
+      var focused = document.activeElement === input;
+      var pos = focused ? Math.min(input.selectionStart, base.length) : null;
+      target.set(newValue);
+      if (focused) { try { input.setSelectionRange(pos, pos); } catch (e) {} }
+    }
   }
   form.addEventListener('input', function (e) {
     var target = def.autoText && controls[def.autoText.target];
@@ -858,7 +891,8 @@
     var out = {};
     Object.keys(controls).forEach(function (key) {
       if (controls[key].noOutput) return;
-      var v = formatValue(controls[key].field, controls[key].get());
+      // ​: the invisible autoAppend marker (see updateAutoAppend) never belongs in the output.
+      var v = formatValue(controls[key].field, controls[key].get()).replace(/​/g, '');
       // Empty boxes are written as "—" (def.emptyValue) in the report and its title.
       out[key] = String(v).trim() ? v : (def.emptyValue != null ? def.emptyValue : '');
     });
