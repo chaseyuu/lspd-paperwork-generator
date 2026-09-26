@@ -432,7 +432,7 @@ window.REPORT_FORM = {
         },
         {
           "key": "KAYIT_ANLATI_74HXQ2",
-          "label": "Kayıt & Kanıt Anlatısı (Rapora Eklenecek)",
+          "label": "Kayıt İşlemleri Anlatısı",
           "type": "textarea",
           "rows": 4,
           "span": "all",
