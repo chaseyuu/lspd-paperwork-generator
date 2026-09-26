@@ -267,7 +267,22 @@
     }
     add.addEventListener('click', function () { addRow(true); });
     addRow(false);
-    return { node: root, get: function () { return rows.map(function (r) { return r.select.get(); }).filter(Boolean).join(','); }, set: function () {}, focusEl: rows[0].select.focusEl, noOutput: true };
+    return {
+      node: root,
+      get: function () { return rows.map(function (r) { return r.select.get(); }).filter(Boolean).join(','); },
+      // Rebuilds the rows from a get()-shaped "001,001,002" csv (used to restore a saved draft —
+      // this field's own rows aren't kept in the report output, only its target, so they'd
+      // otherwise reset to one empty row on every reload).
+      set: function (csv) {
+        var ids = String(csv || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+        if (!ids.length) return;
+        while (rows.length < ids.length) addRow(false);
+        ids.forEach(function (id, i) { rows[i].select.set(id); });
+        sync();
+      },
+      focusEl: rows[0].select.focusEl,
+      noOutput: true,
+    };
   }
 
   /* ---------- Build the form ---------- */
@@ -927,7 +942,11 @@
     var values = {};
     Object.keys(controls).forEach(function (key) {
       var c = controls[key];
-      if (c.noOutput) return;   // e.g. the charges picker's own row state
+      // noOutput fields are normally skipped (they're not real report output), except a charges
+      // picker: its rows aren't the report output either, but they DO need their own draft entry
+      // to be rebuilt on reload — its target field alone isn't enough to know how many rows/which
+      // duplicates there were.
+      if (c.noOutput && (!c.field || c.field.type !== 'charges')) return;
       values[key] = c.get();
     });
     try { localStorage.setItem(draftKey, JSON.stringify({ ts: Date.now(), values: values })); } catch (e) {}
