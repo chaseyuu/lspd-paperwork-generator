@@ -957,9 +957,10 @@
       if (show) {
         var secVals = {};
         for (var sk in vals) secVals[sk] = vals[sk];
-        if (typeof def.sendUrl === 'function') secVals.ARREST_REPORT_LINK = def.sendUrl(vals);
+        var secLink = typeof def.sendUrl === 'function' ? def.sendUrl(vals) : '';
+        secVals.ARREST_REPORT_LINK = secLink;
         var secCode = document.getElementById('result-code-2');
-        if (secCode) secCode.value = fill(secOut.template, secVals, false);
+        if (secCode) secCode.value = typeof secOut.build === 'function' ? secOut.build(secVals, secLink) : fill(secOut.template, secVals, false);
       }
     }
     formView.hidden = true;
