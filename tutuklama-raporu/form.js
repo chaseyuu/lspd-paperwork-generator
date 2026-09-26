@@ -16,19 +16,6 @@ function tutuklamaLastName(full) {
   var parts = String(full || '').trim().split(/\s+/).filter(Boolean);
   return parts.length ? tutuklamaCap(parts[parts.length - 1]) : '';
 }
-/* "115, 116 (x2), 701" -> { text: "115. Kolluk Kuvvetlerinden Kaçmak (F), 116. Tutuklamaya
-   Direnmek (M), 701. İzinsiz Ateşli Silah Bulundurmak (M)", count: 3 } — madde numarasını,
-   başlığını ve türünü (F/M) window.PENAL_CODE'dan bulup yazar; (xN) tekrar sayısı yok sayılır
-   (her madde tek kez listelenir). Bulunamayan bir id olduğu gibi bırakılır. */
-function tutuklamaChargesText(rawList) {
-  var code = window.PENAL_CODE || [];
-  var ids = String(rawList || '').split(',').map(function (s) { return s.replace(/\s*\(x\d+\)\s*$/, '').trim(); }).filter(Boolean);
-  var parts = ids.map(function (id) {
-    var entry = code.filter(function (c) { return c.id === id; })[0];
-    return entry ? (entry.id + '. ' + entry.charge + ' (' + entry.type + ')') : id;
-  });
-  return { text: parts.join(', '), count: parts.length };
-}
 /* 0-999 arası tam sayıyı Türkçe okunuşuna çevirir ("5" -> "beş", "19" -> "on dokuz"). Aralık
    dışı/sayı olmayan girdi için null döner (çağıran yer {Miktar} placeholder'ına düşürür). */
 var TUTUKLAMA_SAYI_BIRLER = ['', 'bir', 'iki', 'üç', 'dört', 'beş', 'altı', 'yedi', 'sekiz', 'dokuz'];
@@ -74,15 +61,33 @@ function tutuklamaMaterialLine(v) {
   var joined = items.length > 1 ? items.slice(0, -1).join(', ') + ' ve ' + items[items.length - 1] : items[0];
   return 'Şüpheliye ait ' + joined + ', Property Room\'a ' + p(v.EVIDENCE_KAYIT_NO, 'Evidence Kayıt Numarası') + ' kayıt numarası ile teslim ettim.';
 }
+/* "001 (x3), 002" -> ["001. İhanet (F) maddesine yönelik üç ayrı suçlama",
+   "002. Casusluk (F) maddesine yönelik suçlama"] — her maddeyi window.PENAL_CODE'dan bulup
+   yazar; aynı madde birden fazla kez işlendiyse (xN) sayısını Türkçe yazıyla ekler, tek seferse
+   düz "suçlama" der. Bulunamayan bir id olduğu gibi bırakılır. */
+function tutuklamaChargeClauses(rawList) {
+  var code = window.PENAL_CODE || [];
+  var entries = String(rawList || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+  return entries.map(function (entry) {
+    var m = /^(.*?)(?:\s*\(x(\d+)\))?$/.exec(entry);
+    var id = (m ? m[1] : entry).trim();
+    var count = m && m[2] ? parseInt(m[2], 10) : 1;
+    var found = code.filter(function (c) { return c.id === id; })[0];
+    var label = found ? (found.id + '. ' + found.charge + ' (' + found.type + ')') : id;
+    var sayi = count > 1 ? tutuklamaSayiOku(count) : null;
+    return label + ' maddesine yönelik ' + (sayi ? sayi + ' ayrı suçlama' : 'suçlama');
+  });
+}
 function tutuklamaBookingLine(v) {
   function p(val, label) { return val ? val : '{' + label + '}'; }
   if (v.KAYIT_ISLEMLERI !== 'Evet') return 'Kayıt İşlemleri: ' + (v.KAYIT_ISLEMLERI || 'Hayır');
 
   var saat = p(tutuklamaBookingTime(v.BOOKING_SAAT), 'Kayıt İşlemleri Saati');
   var supheli = p(tutuklamaCap(v.AD_SOYADI_2911L1G), 'Şüpheli Adı Soyadı');
-  var chargesInfo = tutuklamaChargesText(v.CEZA_KANUNU_97NVWS && v.CEZA_KANUNU_97NVWS !== '—' ? v.CEZA_KANUNU_97NVWS : '');
-  var kanunlar = p(chargesInfo.text, 'Kanunlar');
-  var madde = chargesInfo.count > 1 ? 'maddelerine' : 'maddesine';
+  var clauses = tutuklamaChargeClauses(v.CEZA_KANUNU_97NVWS && v.CEZA_KANUNU_97NVWS !== '—' ? v.CEZA_KANUNU_97NVWS : '');
+  var kanunlar = clauses.length
+    ? (clauses.length > 1 ? clauses.slice(0, -1).join(', ') + ' ve ' + clauses[clauses.length - 1] : clauses[0])
+    : '{Kanunlar}';
   var kendimYaptim = v.BOOKING_KENDIM_YAPTIM === 'Evet';
   var ikinciPersonel = String(v.PERSONEL_BILGISI_151KSJP1 || '').trim();
   var hasSecondOfficer = ikinciPersonel && ikinciPersonel !== '—';
@@ -92,14 +97,14 @@ function tutuklamaBookingLine(v) {
     var soyad = p(tutuklamaLastName(v.BOOKING_MEMUR_ADSOYAD), 'Booking Yapan Memur Soyadı');
     var seriNo = p(v.BOOKING_MEMUR_SERI_NO, 'BookingYapanMemurSeriNo');
     return saat + ' ' + supheli + ' için kayıt işlemleri, Mission Row Community Police Station\'da ' + rutbe + ' ' + soyad + ' (Seri No. ' + seriNo + ') tarafından tamamlandı. ' +
-      supheli + ' için San Andreas Ceza Kanunu\'nun ' + kanunlar + ' ' + madde + ' yönelik suçlama gerçekleştirdik ve sevk edilmesini sağlattık.';
+      supheli + ' için San Andreas Ceza Kanunu\'nun ' + kanunlar + ' gerçekleştirdik ve sevk edilmesini sağlattık.';
   }
   if (hasSecondOfficer) {
     return saat + ' ' + supheli + ' için kayıt işlemlerini, Mission Row Community Police Station\'da tamamladım. ' +
-      supheli + ' için San Andreas Ceza Kanunu\'nun ' + kanunlar + ' ' + madde + ' yönelik suçlama gerçekleştirdik ve sevk edilmesini sağlattık.';
+      supheli + ' için San Andreas Ceza Kanunu\'nun ' + kanunlar + ' gerçekleştirdik ve sevk edilmesini sağlattık.';
   }
   return saat + ' ' + supheli + ' için kayıt işlemlerini, Mission Row Community Police Station\'da tamamladım. ' +
-    supheli + ' için San Andreas Ceza Kanunu\'nun ' + kanunlar + ' ' + madde + ' yönelik suçlama gerçekleştirdim ve sevk edilmesini sağlattım.';
+    supheli + ' için San Andreas Ceza Kanunu\'nun ' + kanunlar + ' gerçekleştirdim ve sevk edilmesini sağlattım.';
 }
 
 /* "JOHN CLARK" -> Sworn Roster'da "CLARK, JOHN" satırını arar, bulursa seri no.'yu döndürür.
