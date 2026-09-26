@@ -779,7 +779,10 @@
     });
   }
   /* ---------- Text written automatically from other fields (def.autoText) ----------
-   * Kept up to date until the user edits the target box by hand; clearing it turns it back on. */
+   * Kept up to date until the user edits the target box by hand; clearing it turns it back on.
+   * def.autoText.alwaysLive skips that hand-edit freeze entirely — the box is always fully
+   * recomputed from the other fields' current values, whether it's empty or not (e.g. a summary
+   * the officer is never meant to hand-write over, only ever read). */
   var autoTimer = null;
   function scheduleAuto() {
     clearTimeout(autoTimer);
@@ -795,7 +798,7 @@
     var target = controls[def.autoText.target];
     if (!target || !target.input) return;
     var input = target.input;
-    if (input.value && !input.dataset.autotext) return;   // edited by hand
+    if (!def.autoText.alwaysLive && input.value && !input.dataset.autotext) return;   // edited by hand
     var raw = {};
     Object.keys(controls).forEach(function (k) { raw[k] = controls[k].get(); });
     var text = def.autoText.build(raw) || '';
@@ -862,6 +865,7 @@
   form.addEventListener('input', function (e) {
     var target = def.autoText && controls[def.autoText.target];
     if (target && e.target === target.input) {
+      if (def.autoText.alwaysLive) { scheduleAuto(); return; }
       if (target.input.value) delete target.input.dataset.autotext; else scheduleAuto();
       return;
     }

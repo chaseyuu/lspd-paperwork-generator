@@ -137,6 +137,7 @@ window.REPORT_FORM = {
   },
   "autoText": {
     "target": "KAYIT_ANLATI_74HXQ2",
+    "alwaysLive": true,
     "build": function (v) { return tutuklamaBookingLine(v); }
   },
   "sections": [
@@ -436,7 +437,7 @@ window.REPORT_FORM = {
           "type": "textarea",
           "rows": 4,
           "span": "all",
-          "hint": "Yukarıdaki alanlara göre canlı güncellenir. Buraya elle yazarsanız (veya değiştirirseniz) o andan itibaren otomatik güncellenmeyi bırakır — kutuyu boşaltırsanız yeniden otomatik güncellenmeye döner."
+          "hint": "Yukarıdaki alanlara göre her zaman canlı güncellenir; elle yazdığınız bir metin kalıcı olmaz, bir sonraki değişiklikte üzerine yazılır."
         }
       ]
     },
