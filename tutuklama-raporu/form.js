@@ -79,7 +79,7 @@ function tutuklamaBookingLine(v) {
   var kanit = v.KANIT_TESLIM === 'Evet' ? '\n' + tutuklamaMaterialLine(v) : '';
   if (v.KAYIT_ISLEMLERI !== 'Evet') return 'Kayıt İşlemleri: ' + (v.KAYIT_ISLEMLERI || 'Hayır') + kanit;
 
-  var saat = p(tutuklamaBookingTime(v.BOOKING_SAAT), 'Booking Saati');
+  var saat = p(tutuklamaBookingTime(v.BOOKING_SAAT), 'Kayıt İşlemleri Saati');
   var supheli = p(tutuklamaCap(v.AD_SOYADI_2911L1G), 'Şüpheli Adı Soyadı');
   var chargesInfo = tutuklamaChargesText(v.CEZA_KANUNU_97NVWS && v.CEZA_KANUNU_97NVWS !== '—' ? v.CEZA_KANUNU_97NVWS : '');
   var kanunlar = p(chargesInfo.text, 'Kanunlar');
@@ -379,7 +379,7 @@ window.REPORT_FORM = {
         },
         {
           "key": "BOOKING_SAAT",
-          "label": "Booking Saati",
+          "label": "Kayıt İşlemleri Saati",
           "type": "time",
           "showWhen": { "key": "KAYIT_ISLEMLERI", "equals": "Evet" }
         },
