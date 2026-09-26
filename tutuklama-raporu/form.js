@@ -82,7 +82,7 @@ function tutuklamaBookingLine(v) {
   function p(val, label) { return val ? val : '{' + label + '}'; }
   if (v.KAYIT_ISLEMLERI !== 'Evet') return 'Kayıt İşlemleri: ' + (v.KAYIT_ISLEMLERI || 'Hayır');
 
-  var saat = p(tutuklamaBookingTime(v.BOOKING_SAAT), 'Kayıt İşlemleri Saati');
+  var saat = p(tutuklamaBookingTime(v.BOOKING_SAAT), 'Kayıt İşlemi Saati');
   var supheli = p(tutuklamaCap(v.AD_SOYADI_2911L1G), 'Şüpheli Adı Soyadı');
   var clauses = tutuklamaChargeClauses(v.CEZA_KANUNU_97NVWS && v.CEZA_KANUNU_97NVWS !== '—' ? v.CEZA_KANUNU_97NVWS : '');
   var kanunlar = clauses.length
@@ -93,9 +93,9 @@ function tutuklamaBookingLine(v) {
   var hasSecondOfficer = ikinciPersonel && ikinciPersonel !== '—';
 
   if (!kendimYaptim) {
-    var rutbe = p(v.BOOKING_MEMUR_RUTBE, 'Rütbe');
-    var soyad = p(tutuklamaLastName(v.BOOKING_MEMUR_ADSOYAD), 'Booking Yapan Memur Soyadı');
-    var seriNo = p(v.BOOKING_MEMUR_SERI_NO, 'BookingYapanMemurSeriNo');
+    var rutbe = p(v.BOOKING_MEMUR_RUTBE, 'Kayıt İşlemini Yapan Memurun Rütbesi');
+    var soyad = p(tutuklamaLastName(v.BOOKING_MEMUR_ADSOYAD), 'Kayıt İşlemini Yapan Memur Soyadı');
+    var seriNo = p(v.BOOKING_MEMUR_SERI_NO, 'Kayıt İşlemini Yapan Memur Seri No.');
     return saat + ' ' + supheli + ' için kayıt işlemleri, Mission Row Community Police Station\'da ' + rutbe + ' ' + soyad + ' (Seri No. ' + seriNo + ') tarafından tamamlandı. ' +
       supheli + ' için San Andreas Ceza Kanunu\'nun ' + kanunlar + ' gerçekleştirdik ve sevk edilmesini sağlattık.';
   }
@@ -391,7 +391,7 @@ window.REPORT_FORM = {
         },
         {
           "key": "BOOKING_SAAT",
-          "label": "Kayıt İşlemleri Saati",
+          "label": "Kayıt İşlemi Saati",
           "type": "time",
           "showWhen": { "key": "KAYIT_ISLEMLERI", "equals": "Evet" }
         },
@@ -403,7 +403,7 @@ window.REPORT_FORM = {
         },
         {
           "key": "BOOKING_MEMUR_ADSOYAD",
-          "label": "Booking Yapan Memur Adı Soyadı",
+          "label": "Kayıt İşlemini Yapan Memur Adı Soyadı",
           "type": "text",
           "placeholder": "JOHN DOE",
           "upper": "en",
@@ -416,7 +416,7 @@ window.REPORT_FORM = {
         },
         {
           "key": "BOOKING_MEMUR_SERI_NO",
-          "label": "Booking Yapan Memur Seri No.",
+          "label": "Kayıt İşlemini Yapan Memur Seri No.",
           "type": "text",
           "placeholder": "00000",
           "hint": "Adı Soyadı Sworn Roster'da bulunursa otomatik doldurulur.",
@@ -427,7 +427,7 @@ window.REPORT_FORM = {
         },
         {
           "key": "BOOKING_MEMUR_RUTBE",
-          "label": "Booking Yapan Memur Rütbe",
+          "label": "Kayıt İşlemini Yapan Memurun Rütbesi",
           "type": "select",
           "placeholder": "Seçim Yapın",
           "values": [
