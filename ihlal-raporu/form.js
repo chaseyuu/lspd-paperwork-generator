@@ -411,13 +411,15 @@ window.REPORT_FORM = {
     target: 'AIKLAMA_534E88E',
     build: function (v) {
       var ids = String(v.SUCLAMA || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
-      if (!ids.length) return '';
-      // Seçilen kanunlardan en az biri 400-499 aralığındaysa açıklama otomatik yazılır.
+      // Bu cümle yalnızca 400-499 (misdemeanor) aralığındaki araç ihlalleri için geçerli: bir kanun
+      // seçilmiş ve aralık dışındaysa cümleyi bastır. Ama memur Kanunlar'ı seçmeden önce tarih,
+      // plaka vb. diğer alanları doldurabilir; bu yüzden henüz hiç kanun seçilmemişken (ids boşken)
+      // canlı önizlemeyi bloke etmiyoruz — girilme sırası ne olursa olsun anında güncellensin diye.
       var anyInRange = ids.some(function (id) {
         var n = parseInt(id, 10);
         return n >= 400 && n <= 499;
       });
-      if (!anyInRange) return '';
+      if (ids.length && !anyInRange) return '';
       var parts = {
         date: longDate(v.HLAL_TARIH_538EMNO),
         time: timeWithSuffix(v.HLAL_SAATI_13562E),
@@ -428,7 +430,7 @@ window.REPORT_FORM = {
         charges: chargeList(ids),
       };
       // Live preview: written as soon as any piece is known; missing pieces show as {Alan}.
-      var any = parts.time || parts.name || parts.plate || parts.model || parts.location || parts.charges;
+      var any = parts.date || parts.time || parts.name || parts.plate || parts.model || parts.location || parts.charges;
       if (!any) return '';
       function p(k, label) { return parts[k] || '{' + label + '}'; }
       var madde = ids.length > 1 ? 'maddelerini' : 'maddesini';
