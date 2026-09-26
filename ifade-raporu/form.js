@@ -1,10 +1,66 @@
 /* İfade Raporu: alanlar ve çıktı şablonu (BBCode). */
+
+/* Olay Türlerini kontrol edip seçili olanları topla */
+function ifadeOlayTurleri(v) {
+  var types = [];
+  var typeMap = {
+    'ARA_TAKIBI_4IJPE': 'Araç Takibi',
+    'SILAHLI_SALDIRI_8NEX9': 'Silahlı Saldırı',
+    'CINAYET_128B5T': 'Cinayet',
+    'ETE_BALANTILI_16CLA1': 'Çete Bağlantılı',
+    'HIRSIZLIK_20A97R': 'Hırsızlık',
+    'TRAFIK_KAZASI_24207K': 'Trafik Kazası',
+    'DARP_28CH0W': 'Darp',
+    'DIER_32R6TT': 'Diğer'
+  };
+  for (var key in typeMap) {
+    if (v[key] && v[key].indexOf('cbc') >= 0) {
+      types.push(typeMap[key].toLocaleLowerCase('en-US'));
+    }
+  }
+  if (!types.length) return '';
+  return types.length > 1 ? types.slice(0, -1).join(', ') + ' ve ' + types[types.length - 1] : types[0];
+}
+
+/* Tarih ve saati formatla (gün adı ve ay adı ile birlikte) */
+function ifadeTarihFormatla(dateStr) {
+  if (!dateStr) return '';
+  var gunler = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
+  var aylar = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+  var date = new Date(dateStr + 'T00:00:00');
+  if (isNaN(date.getTime())) return dateStr;
+  var gun = gunler[date.getDay()];
+  var ay = aylar[date.getMonth()];
+  var gün = date.getDate();
+  return gün + ' ' + ay + ' ' + date.getFullYear();
+}
+
+/* Giriş Açıklaması oluştur: "15 Mayıs 2026'de Mission Row Police Station'da meydana gelen trafik kazası olayı hakkında Simon Graves'den ifade aldım." */
+function ifadeGirisAciklamasi(v) {
+  function p(val, label) { return val ? val : '{' + label + '}'; }
+  var tarih = p(ifadeTarihFormatla(v.FADE_TARH_5888JI), 'İfade Tarihi');
+  var konum = p(String(v.FADE_ALINAN_KONUM_49SAXV || '').trim().toLocaleLowerCase('en-US'), 'İfade Alınan Konum');
+  var olayTuru = ifadeOlayTurleri(v);
+  var olayAcik = olayTuru ? olayTuru + ' olayı' : '{Olay Türü}';
+  var ifadeVeren = p(String(v.ADI_SOYADI_19FJ2A || '').trim().toLocaleUpperCase('en-US'), 'İfadeyi Verenin Adı Soyadı');
+  var ifadeAlan = p(String(v.ADI_SOYADI_11692Z || '').trim().toLocaleUpperCase('en-US'), 'İfadeyi Alan Memur');
+
+  return tarih + '\'de ' + konum + '\'da meydana gelen ' + olayAcik + ' hakkında ' + ifadeVeren + '\'dan ifade aldım.';
+}
+
 window.REPORT_FORM = {
   "emptyValue": "—",
   "title": "İfade Raporu",
   "titleTemplate": "IR — {TARH_17YUM7} - {RAPOR_NO_8992V}",
   "outputFormat": "bbcode",
   "sendUrl": "https://lspd-tr.gta.world/viewforum.php?f=201",
+  "autoText": [
+    {
+      "target": "GIRIS_ACIKLAMASI_FADE",
+      "alwaysLive": true,
+      "build": function (v) { return ifadeGirisAciklamasi(v); }
+    }
+  ],
   "sections": [
     {
       "title": "Personel Bilgileri",
@@ -280,7 +336,22 @@ window.REPORT_FORM = {
           "tooltip": "Sessiz kalma hakkına sahipsiniz. Söyleyeceğiniz herhangi bir şey mahkeme sırasında aleyhinizde kullanılabilir veya kullanılacaktır. İfadeniz öncesinde veya sırasında bir avukatla konuşma ve sizinle birlikte bulunması hakkına sahipsiniz. Eğer bir avukat tutacak maddi durumunuz bulunmuyorsa istemeniz durumunda sizi ücretsiz olarak temsil edecek bir avukat atanacaktır."
         }
       ]
+    },
+    {
+      "title": "Giriş Açıklaması",
+      "cols": 1,
+      "fields": [
+        {
+          "key": "GIRIS_ACIKLAMASI_FADE",
+          "label": "Giriş Açıklaması",
+          "type": "textarea",
+          "rows": 3,
+          "span": "all",
+          "copyable": true,
+          "hint": "Yukarıdaki alanlara göre her zaman canlı güncellenir; elle yazdığınız bir metin kalıcı olmaz, bir sonraki değişiklikte üzerine yazılır."
+        }
+      ]
     }
   ],
-  "template": "[center][size=125]LOS SANTOS POLICE DEPARTMENT\n[b]İFADE RAPORU[/b][/size][/center]\n\n[table=#d0dade,white][tr]\n[tdwidth=#d0dade,#ffffff,top,left,3,1][size=85][indent=2][b]İFADEYİ ALAN[/b] \n{ADI_SOYADI_11692Z}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,1,1][size=85][indent=2][b]SERİ NO.[/b]\n{SER_NO_22H7AT}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,1,1][size=85][indent=2][b]DIVISION[/b]\n{DIVISION_11XSCY}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2][b]GÖREVLENDİRME[/b]\n{GREVLENDRME_22B7Q4}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,1,1][size=85][indent=2][b]TARİH[/b]\n{TARH_17YUM7}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,1,1][size=85][indent=2][b]RAPOR NO.[/b]\n{RAPOR_NO_8992V}[/indent][/size][/tdwidth][/table]\n\n[table=#d0dade,white][tr]\n[tdwidth=#d0dade,#ffffff,top,left,10,1][size=85][indent=2][b]OLAY TÜRÜ[/b][/size]\n[size=85][{ARA_TAKIBI_4IJPE}] Araç Takibi[color=#FFFFFF]___[/color][{SILAHLI_SALDIRI_8NEX9}] Silahlı Saldırı[color=#FFFFFF]___[/color][{CINAYET_128B5T}] Cinayet[color=#FFFFFF]___[/color][{ETE_BALANTILI_16CLA1}] Çete Bağlantılı[color=#FFFFFF]___[/color][{HIRSIZLIK_20A97R}] Hırsızlık[color=#FFFFFF]___[/color][{TRAFIK_KAZASI_24207K}] Trafik Kazası[color=#FFFFFF]___[/color][{DARP_28CH0W}] Darp[color=#FFFFFF]___[/color][{DIER_32R6TT}] Diğer[/tdwidth][/size][/table]\n\n[table=#d0dade,white][tr]\n[tdwidth=#d0dade,#ffffff,top,left,3,1][size=85][indent=2][b]İFADEYİ VERENİN ADI SOYADI[/b]\n{ADI_SOYADI_19FJ2A}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2][b]İFADEYİ VERENİN CİNSİYETİ[/b][/size]\n{CNSYET_46IS2W}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2][b]İFADE ALINAN KONUM[/b]\n{FADE_ALINAN_KONUM_49SAXV}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,1,1][size=85][indent=2][b]İFADE TARİHİ[/b]\n{FADE_TARH_5888JI}[/indent][/size][/tdwidth][/table]\n\n[table=#d0dade,white][tr]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2][b]İLETİŞİM BİLGİSİ[/b]\n{LETM_BLGS_12C2ZB}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2][b]İKAMETGAH ADRESİ[/b]\n{KAMETGAH_ADRES_20QFQA}[/size][/tdwidth][/table]\n\n[table=#d0dade,white][tr]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2][b]DETAYLAR[/b]\n{OLAY_AIKLAMASI_VE_FADE_1735NQX}\n\n\n\n\n\n[/indent][/size][/tdwidth][/table]\n\n[table=#d0dade,white][tr]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2][b]KANITLAR[/b]\n[list]\n{KANIT_LISTESI}\n[/list][/indent][/size][/tdwidth][/table]\n\n[table=#d0dade,white][tr]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2][b]MİRANDA BİLGİLENDİRMESİ[/b][/size][size=85][list]\n[*] [{MIRANDA_BILGILENDIRMESI_383WN5K}] Sessiz kalma hakkına sahipsiniz.\n[*] [{MIRANDA_BILGILENDIRMESI_383WN5K}] Söyleyeceğiniz herhangi bir şey mahkeme sırasında aleyhinizde kullanılabilir veya kullanılacaktır.\n[*] [{MIRANDA_BILGILENDIRMESI_383WN5K}] İfadeniz öncesinde veya sırasında bir avukatla konuşma ve sizinle birlikte bulunması hakkına sahipsiniz. \n[*] [{MIRANDA_BILGILENDIRMESI_383WN5K}] Eğer bir avukat tutacak maddi durumunuz bulunmuyorsa istemeniz durumunda sizi ücretsiz olarak temsil edecek bir avukat atanacaktır.\n[/list][/tdwidth][/table]"
+  "template": "[center][size=125]LOS SANTOS POLICE DEPARTMENT\n[b]İFADE RAPORU[/b][/size][/center]\n\n[table=#d0dade,white][tr]\n[tdwidth=#d0dade,#ffffff,top,left,3,1][size=85][indent=2][b]İFADEYİ ALAN[/b] \n{ADI_SOYADI_11692Z}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,1,1][size=85][indent=2][b]SERİ NO.[/b]\n{SER_NO_22H7AT}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,1,1][size=85][indent=2][b]DIVISION[/b]\n{DIVISION_11XSCY}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2][b]GÖREVLENDİRME[/b]\n{GREVLENDRME_22B7Q4}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,1,1][size=85][indent=2][b]TARİH[/b]\n{TARH_17YUM7}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,1,1][size=85][indent=2][b]RAPOR NO.[/b]\n{RAPOR_NO_8992V}[/indent][/size][/tdwidth][/table]\n\n[table=#d0dade,white][tr]\n[tdwidth=#d0dade,#ffffff,top,left,10,1][size=85][indent=2][b]OLAY TÜRÜ[/b][/size]\n[size=85][{ARA_TAKIBI_4IJPE}] Araç Takibi[color=#FFFFFF]___[/color][{SILAHLI_SALDIRI_8NEX9}] Silahlı Saldırı[color=#FFFFFF]___[/color][{CINAYET_128B5T}] Cinayet[color=#FFFFFF]___[/color][{ETE_BALANTILI_16CLA1}] Çete Bağlantılı[color=#FFFFFF]___[/color][{HIRSIZLIK_20A97R}] Hırsızlık[color=#FFFFFF]___[/color][{TRAFIK_KAZASI_24207K}] Trafik Kazası[color=#FFFFFF]___[/color][{DARP_28CH0W}] Darp[color=#FFFFFF]___[/color][{DIER_32R6TT}] Diğer[/tdwidth][/size][/table]\n\n[table=#d0dade,white][tr]\n[tdwidth=#d0dade,#ffffff,top,left,3,1][size=85][indent=2][b]İFADEYİ VERENİN ADI SOYADI[/b]\n{ADI_SOYADI_19FJ2A}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2][b]İFADEYİ VERENİN CİNSİYETİ[/b][/size]\n{CNSYET_46IS2W}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2][b]İFADE ALINAN KONUM[/b]\n{FADE_ALINAN_KONUM_49SAXV}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,1,1][size=85][indent=2][b]İFADE TARİHİ[/b]\n{FADE_TARH_5888JI}[/indent][/size][/tdwidth][/table]\n\n[table=#d0dade,white][tr]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2][b]İLETİŞİM BİLGİSİ[/b]\n{LETM_BLGS_12C2ZB}[/indent][/size][/tdwidth]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2][b]İKAMETGAH ADRESİ[/b]\n{KAMETGAH_ADRES_20QFQA}[/size][/tdwidth][/table]\n\n[table=#d0dade,white][tr]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2][b]DETAYLAR[/b]\n{OLAY_AIKLAMASI_VE_FADE_1735NQX}\n\n\n\n\n\n[/indent][/size][/tdwidth][/table]\n\n[table=#d0dade,white][tr]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2][b]KANITLAR[/b]\n[list]\n{KANIT_LISTESI}\n[/list][/indent][/size][/tdwidth][/table]\n\n[table=#d0dade,white][tr]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2][b]MİRANDA BİLGİLENDİRMESİ[/b][/size][size=85][list]\n[*] [{MIRANDA_BILGILENDIRMESI_383WN5K}] Sessiz kalma hakkına sahipsiniz.\n[*] [{MIRANDA_BILGILENDIRMESI_383WN5K}] Söyleyeceğiniz herhangi bir şey mahkeme sırasında aleyhinizde kullanılabilir veya kullanılacaktır.\n[*] [{MIRANDA_BILGILENDIRMESI_383WN5K}] İfadeniz öncesinde veya sırasında bir avukatla konuşma ve sizinle birlikte bulunması hakkına sahipsiniz. \n[*] [{MIRANDA_BILGILENDIRMESI_383WN5K}] Eğer bir avukat tutacak maddi durumunuz bulunmuyorsa istemeniz durumunda sizi ücretsiz olarak temsil edecek bir avukat atanacaktır.\n[/list][/tdwidth][/table]\n\n[table=#d0dade,white][tr]\n[tdwidth=#d0dade,#ffffff,top,left,2,1][size=85][indent=2][b]GİRİŞ AÇIKLAMASI[/b]\n{GIRIS_ACIKLAMASI_FADE}\n[/indent][/size][/tdwidth][/table]"
 };
