@@ -4,6 +4,7 @@ window.REPORT_FORM = {
   "title": "İfade Raporu",
   "titleTemplate": "IR — {TARH_17YUM7} - {RAPOR_NO_8992V}",
   "outputFormat": "bbcode",
+  "sendUrl": "https://lspd-tr.gta.world/viewforum.php?f=201",
   "sections": [
     {
       "title": "Personel Bilgileri",

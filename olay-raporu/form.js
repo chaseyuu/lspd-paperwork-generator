@@ -4,6 +4,7 @@ window.REPORT_FORM = {
   "title": "Olay Raporu",
   "titleTemplate": "OR — {TARH_17YUM7} - {RAPOR_NO_148S5HW}",
   "outputFormat": "bbcode",
+  "sendUrl": "https://lspd-tr.gta.world/viewforum.php?f=188",
   "sections": [
     {
       "title": "Personel Bilgileri",
