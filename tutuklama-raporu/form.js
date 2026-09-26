@@ -41,6 +41,25 @@ function tutuklamaBookingLine(v) {
     supheli + ' için San Andreas Ceza Kanunu\'nun ' + kanunlar + ' maddelerine yönelik suçlama gerçekleştirdim ve sevk edilmesini sağlattım.';
 }
 
+/* "JOHN CLARK" -> Sworn Roster'da "CLARK, JOHN" satırını arar, bulursa seri no.'yu döndürür.
+   Roster window.SWORN_ROSTER (lspd-tools/assets/sworn-roster.js) üzerinden gelir; sayfa onu
+   yüklemediyse ya da eşleşme yoksa null döner (alan boş/elle girilmiş halinde kalır). */
+function tutuklamaSeriLookup(fullName) {
+  var roster = window.SWORN_ROSTER || [];
+  var parts = String(fullName || '').trim().split(/\s+/).filter(Boolean);
+  if (parts.length < 2) return null;
+  var ad = parts.shift().toLocaleUpperCase('en-US');
+  var soyad = parts.join(' ').toLocaleUpperCase('en-US');
+  for (var i = 0; i < roster.length; i++) {
+    var comma = roster[i].name.indexOf(',');
+    if (comma < 0) continue;
+    var rSoyad = roster[i].name.slice(0, comma).trim().toLocaleUpperCase('en-US');
+    var rAd = roster[i].name.slice(comma + 1).trim().toLocaleUpperCase('en-US');
+    if (rSoyad === soyad && rAd === ad) return roster[i].seri;
+  }
+  return null;
+}
+
 window.REPORT_FORM = {
   "emptyValue": "—",
   "title": "Tutuklama Raporu",
@@ -140,14 +159,16 @@ window.REPORT_FORM = {
           "placeholder": "JOHN DOE",
           "default": "—",
           "hint": "Büyük harflerle doldurun.",
-          "upper": "en"
+          "upper": "en",
+          "lookupTarget": "SERI_NO_159LJQF1",
+          "lookup": tutuklamaSeriLookup
         },
         {
           "key": "SERI_NO_159LJQF1",
           "label": "Seri No.",
           "type": "text",
           "placeholder": "00000",
-          "default": "—"
+          "hint": "Adı Soyadı Sworn Roster'da bulunursa otomatik doldurulur."
         },
         {
           "key": "DIVISION_21NN6U",
@@ -316,6 +337,8 @@ window.REPORT_FORM = {
           "type": "text",
           "placeholder": "JOHN DOE",
           "upper": "en",
+          "lookupTarget": "BOOKING_MEMUR_SERI_NO",
+          "lookup": tutuklamaSeriLookup,
           "showWhen": [
             { "key": "KAYIT_ISLEMLERI", "equals": "Evet" },
             { "key": "BOOKING_KENDIM_YAPTIM", "equals": "Hayır" }
@@ -326,7 +349,7 @@ window.REPORT_FORM = {
           "label": "Booking Yapan Memur Seri No.",
           "type": "text",
           "placeholder": "00000",
-          "hint": "İleride Sworn Roster'dan otomatik çekilecek; şimdilik elle girin.",
+          "hint": "Adı Soyadı Sworn Roster'da bulunursa otomatik doldurulur.",
           "showWhen": [
             { "key": "KAYIT_ISLEMLERI", "equals": "Evet" },
             { "key": "BOOKING_KENDIM_YAPTIM", "equals": "Hayır" }
