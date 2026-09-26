@@ -45,7 +45,8 @@ function tutuklamaBookingLine(v) {
   if (!kendimYaptim) {
     var rutbe = p(v.BOOKING_MEMUR_RUTBE, 'Rütbe');
     var soyad = p(tutuklamaLastName(v.BOOKING_MEMUR_ADSOYAD), 'Booking Yapan Memur Soyadı');
-    return saat + ' ' + supheli + ' için kayıt işlemleri, Mission Row Community Police Station\'da ' + rutbe + ' ' + soyad + ' tarafından tamamlandı. ' +
+    var seriNo = p(v.BOOKING_MEMUR_SERI_NO, 'BookingYapanMemurSeriNo');
+    return saat + ' ' + supheli + ' için kayıt işlemleri, Mission Row Community Police Station\'da ' + rutbe + ' ' + soyad + ' (Seri No. ' + seriNo + ') tarafından tamamlandı. ' +
       supheli + ' için San Andreas Ceza Kanunu\'nun ' + kanunlar + ' ' + madde + ' yönelik suçlama gerçekleştirdik ve sevk edilmesini sağlattık.';
   }
   if (hasSecondOfficer) {

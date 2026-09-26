@@ -782,14 +782,20 @@
     input.value = text;
     if (text) input.dataset.autotext = '1'; else delete input.dataset.autotext;
   }
-  /* ---------- Text kept appended to the end of another (free-typed) field (def.autoAppend) ----------
-   * Unlike autoText, this NEVER stops just because the user has typed their own text in the target
-   * box — it always keeps its own block in sync at the very end, regardless of what they've written
-   * above it, or when. A zero-width space marks exactly where the auto block starts; everything
-   * before it is the user's own text (left untouched), everything from it onward is replaced on every
-   * recompute. The marker rides along inside the field's own value, so it survives a page reload from
-   * a saved draft with no extra bookkeeping, and is invisible wherever the report ends up. */
+  /* ---------- Text kept in sync inside another (free-typed) field (def.autoAppend) ----------
+   * Unlike autoText, this doesn't own the whole box — it tracks just its own block (marked with a
+   * leading zero-width space) and keeps THAT block's content current, wherever it currently sits.
+   * First time, with nothing to find yet, it's inserted at the end. After that:
+   *  - If the exact block we last wrote is still found somewhere in the field (the user may have
+   *    moved it up/down, or typed elsewhere, but left it otherwise alone), it's replaced in place
+   *    with the freshly recomputed one — so relocating it is respected, not fought.
+   *  - If it's no longer found at all (the user edited into it or deleted it), that's treated as the
+   *    user taking over that content by hand: left alone from then on, exactly like autoText already
+   *    does for a hand-edited target field, and it never "helpfully" reappears at the bottom.
+   * The marker rides along inside the field's own value, so this survives a page reload from a saved
+   * draft with no extra bookkeeping, and it's stripped from the final report output (see values()). */
   var AUTOAPPEND_MARKER = '​';
+  var autoAppendLast = {};   // target key -> exact "marker + text" block we last wrote there
   function updateAutoAppend() {
     if (!def.autoAppend) return;
     var cfg = def.autoAppend;
@@ -801,15 +807,37 @@
     var text = cfg.build(raw) || '';
     var sep = cfg.separator != null ? cfg.separator : '\n\n';
     var current = input.value;
-    var markerIdx = current.indexOf(AUTOAPPEND_MARKER);
-    var base = (markerIdx >= 0 ? current.slice(0, markerIdx) : current).replace(/\s+$/, '');
-    var newValue = text ? (base ? base + sep + AUTOAPPEND_MARKER + text : AUTOAPPEND_MARKER + text) : base;
+    var newBlock = text ? AUTOAPPEND_MARKER + text : '';
+    var lastBlock = autoAppendLast[cfg.target];
+    var newValue = current, idx = -1;
+
+    if (lastBlock) {
+      idx = current.indexOf(lastBlock);
+      if (idx >= 0) {
+        newValue = current.slice(0, idx) + newBlock + current.slice(idx + lastBlock.length);
+      }
+      // else: block is gone/altered — the user has taken it over; leave `current` as-is.
+    } else if (newBlock) {
+      // Nothing written yet: insert fresh at the end.
+      newValue = current.replace(/\s+$/, '') + sep + newBlock;
+    }
+
+    // Whatever put the marker where it is (moved by the user, or just inserted above), make sure a
+    // blank-line separator sits between it and any text before it — e.g. the user typing their own
+    // narrative directly in front of an already-present block, with no separator of their own yet.
+    var mIdx = newValue.indexOf(AUTOAPPEND_MARKER);
+    if (mIdx > 0) {
+      var before = newValue.slice(0, mIdx).replace(/\s+$/, '');
+      newValue = before ? before + sep + newValue.slice(mIdx) : newValue.slice(mIdx);
+    }
+
     if (newValue !== current) {
       var focused = document.activeElement === input;
-      var pos = focused ? Math.min(input.selectionStart, base.length) : null;
+      var pos = focused ? input.selectionStart : null;
       target.set(newValue);
-      if (focused) { try { input.setSelectionRange(pos, pos); } catch (e) {} }
+      if (focused) { try { pos = Math.min(pos, newValue.length); input.setSelectionRange(pos, pos); } catch (e) {} }
     }
+    autoAppendLast[cfg.target] = newBlock;
   }
   form.addEventListener('input', function (e) {
     var target = def.autoText && controls[def.autoText.target];
@@ -874,6 +902,20 @@
   prefill();
   loadDraft();
   updateConditionals();
+  // Prime autoAppendLast from what a restored draft already computed to (same inputs -> same text),
+  // so the first real run recognizes the block already sitting in the field instead of appending a
+  // second copy below it. Only when the field's restored value actually contains the marker already —
+  // otherwise (a fresh, empty field) there is nothing to recognize, and priming would wrongly make
+  // the very first run think its block was already written and then deleted.
+  if (def.autoAppend) {
+    var appendTarget = controls[def.autoAppend.target];
+    if (appendTarget && appendTarget.input && appendTarget.input.value.indexOf(AUTOAPPEND_MARKER) >= 0) {
+      var primeRaw = {};
+      Object.keys(controls).forEach(function (k) { primeRaw[k] = controls[k].get(); });
+      var primeText = def.autoAppend.build(primeRaw) || '';
+      autoAppendLast[def.autoAppend.target] = primeText ? AUTOAPPEND_MARKER + primeText : '';
+    }
+  }
   scheduleAuto();
   document.addEventListener('lspd:characters-change', prefill);
 
