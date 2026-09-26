@@ -524,6 +524,10 @@
         // fillTarget on a group field names a sibling field's *suffix*; resolve it to that
         // instance's real key (e.g. "BASLIK" -> "KANIT_3_BASLIK") before buildField ever sees it.
         if (copy.fillTarget) copy.fillTarget = section.key + '_' + n + '_' + copy.fillTarget;
+        // section.showWhen (e.g. a group only shown once a toggle is on) also has to apply to
+        // each instance field itself, not just the group's outer panel — validate() only skips a
+        // field whose own wrap is hidden, and a hidden ancestor doesn't set that.
+        if (section.showWhen && !copy.showWhen) copy.showWhen = section.showWhen;
         return copy;
       });
     }
@@ -531,8 +535,10 @@
       section.fields.forEach(function (f) { delete controls[section.key + '_' + n + '_' + f.suffix]; });
     }
 
+    var groupRoot;
     if (layout === 'cards') {
       var outerPanel = titledPanel(section.title || section.label);
+      groupRoot = outerPanel.parentNode;
       var cardsWrap = el('div', { class: 'group-cards' });
       outerPanel.appendChild(cardsWrap);
       var cardsAddWrap = el('div', { class: 'form-actions group-add' });
@@ -590,6 +596,7 @@
       });
     } else if (layout === 'panels') {
       var container = el('div', { class: 'group-section' });
+      groupRoot = container;
       form.appendChild(container);
       var addWrap = el('div', { class: 'form-actions group-add' });
       addWrap.appendChild(addBtn);
@@ -643,6 +650,7 @@
       });
     } else {
       var panel2 = titledPanel(section.title || section.label);
+      groupRoot = panel2.parentNode;
       var grid2 = el('div', { class: 'field-grid' + (section.cols === 3 ? ' cols-3' : '') });
       panel2.appendChild(grid2);
       var addRowWrap = el('div', { class: 'field span-all group-add-inline' });
@@ -697,6 +705,7 @@
       });
     }
 
+    if (section.showWhen) conditionals.push({ wrap: groupRoot, conds: Array.isArray(section.showWhen) ? section.showWhen : [section.showWhen] });
     groups.push({ def: section, getCount: function () { return count; }, addOne: function () { addBtn.click(); } });
   }
 

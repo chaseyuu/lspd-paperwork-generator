@@ -29,9 +29,56 @@ function tutuklamaChargesText(rawList) {
   });
   return { text: parts.join(', '), count: parts.length };
 }
+/* 0-999 arası tam sayıyı Türkçe okunuşuna çevirir ("5" -> "beş", "19" -> "on dokuz"). Aralık
+   dışı/sayı olmayan girdi için null döner (çağıran yer {Miktar} placeholder'ına düşürür). */
+var TUTUKLAMA_SAYI_BIRLER = ['', 'bir', 'iki', 'üç', 'dört', 'beş', 'altı', 'yedi', 'sekiz', 'dokuz'];
+var TUTUKLAMA_SAYI_ONLAR = ['', 'on', 'yirmi', 'otuz', 'kırk', 'elli', 'altmış', 'yetmiş', 'seksen', 'doksan'];
+function tutuklamaSayiOku(raw) {
+  if (!/^\d+$/.test(String(raw || '').trim())) return null;
+  var n = parseInt(raw, 10);
+  if (n < 0 || n > 999) return null;
+  if (n === 0) return 'sıfır';
+  var yuz = Math.floor(n / 100), on = Math.floor((n % 100) / 10), bir = n % 10;
+  var parts = [];
+  if (yuz) parts.push(yuz === 1 ? 'yüz' : TUTUKLAMA_SAYI_BIRLER[yuz] + ' yüz');
+  if (on) parts.push(TUTUKLAMA_SAYI_ONLAR[on]);
+  if (bir) parts.push(TUTUKLAMA_SAYI_BIRLER[bir]);
+  return parts.join(' ');
+}
+/* Materyal Türü -> belirtme hali (accusative) eki ve miktarın gram mı adet mi okunacağı
+   ("kontrollü madde" gram, silahlar adet/"tane"). */
+var TUTUKLAMA_MATERYAL_TIPLERI = {
+  'Tabanca': { acc: 'tabancayı', gram: false },
+  'Yarı Otomatik Tüfek': { acc: 'yarı otomatik tüfeği', gram: false },
+  'Pompalı Tüfek': { acc: 'pompalı tüfeği', gram: false },
+  'Tam Otomatik Tüfek': { acc: 'tam otomatik tüfeği', gram: false },
+  'Kontrollü Madde': { acc: 'kontrollü maddeyi', gram: true }
+};
+/* "Şüpheliye ait beş gram PCP kontrollü maddeyi ve bir tane Vom Feuer 19 tabancayı, Property
+   Room'a EV-20260616-173 kayıt numarası ile teslim ettim." — MATERYAL_1_*, MATERYAL_2_* ...
+   grup alanlarını (kaç tanesi eklenmişse) okuyup tek cümlede birleştirir. */
+function tutuklamaMaterialLine(v) {
+  function p(val, label) { return val ? val : '{' + label + '}'; }
+  var items = [];
+  for (var i = 1; i <= 8; i++) {
+    var tur = v['MATERYAL_' + i + '_TUR'];
+    if (!tur) continue;
+    var bilgi = TUTUKLAMA_MATERYAL_TIPLERI[tur];
+    if (!bilgi) continue;
+    var adi = String(v['MATERYAL_' + i + '_ADI'] || '').trim();
+    var sayi = tutuklamaSayiOku(v['MATERYAL_' + i + '_MIKTAR']);
+    var miktar = sayi ? (sayi + (bilgi.gram ? ' gram' : ' tane')) : '';
+    items.push(p(miktar, 'Miktar') + ' ' + p(adi, 'Materyal Adı') + ' ' + bilgi.acc);
+  }
+  if (!items.length) return '';
+  var joined = items.length > 1 ? items.slice(0, -1).join(', ') + ' ve ' + items[items.length - 1] : items[0];
+  return 'Şüpheliye ait ' + joined + ', Property Room\'a ' + p(v.EVIDENCE_KAYIT_NO, 'Evidence Kayıt Numarası') + ' kayıt numarası ile teslim ettim.';
+}
 function tutuklamaBookingLine(v) {
   function p(val, label) { return val ? val : '{' + label + '}'; }
-  var kanit = '\nKanıt Teslim Etme: ' + (v.KANIT_TESLIM || 'Hayır');
+  var kanit = v.KANIT_TESLIM === 'Evet'
+    ? '\n' + tutuklamaMaterialLine(v)
+    : '\nKanıt Teslim Etme: ' + (v.KANIT_TESLIM || 'Hayır');
   if (v.KAYIT_ISLEMLERI !== 'Evet') return 'Kayıt İşlemleri: ' + (v.KAYIT_ISLEMLERI || 'Hayır') + kanit;
 
   var saat = p(tutuklamaBookingTime(v.BOOKING_SAAT), 'Booking Saati');
@@ -398,12 +445,63 @@ window.REPORT_FORM = {
           "side": "right"
         },
         {
+          "key": "EVIDENCE_KAYIT_NO",
+          "label": "Evidence Kayıt Numarası",
+          "type": "text",
+          "placeholder": "EV-20260616-173",
+          "side": "right",
+          "showWhen": { "key": "KANIT_TESLIM", "equals": "Evet" }
+        },
+        {
           "key": "KAYIT_ANLATI_74HXQ2",
           "label": "Kayıt & Kanıt Anlatısı (Rapora Eklenecek)",
           "type": "textarea",
           "rows": 4,
           "span": "all",
           "hint": "Yukarıdaki alanlara göre canlı güncellenir. Buraya elle yazarsanız (veya değiştirirseniz) o andan itibaren otomatik güncellenmeyi bırakır — kutuyu boşaltırsanız yeniden otomatik güncellenmeye döner."
+        }
+      ]
+    },
+    {
+      "group": true,
+      "layout": "inline",
+      "key": "MATERYAL",
+      "label": "El Koyulan Materyal",
+      "title": "El Koyulan Materyal",
+      "min": 1,
+      "max": 5,
+      "addLabel": "Materyal Ekle",
+      "cols": 3,
+      "showWhen": { "key": "KANIT_TESLIM", "equals": "Evet" },
+      "target": "MATERYAL_DUMMY_TARGET",
+      "joinWith": "",
+      "blockTemplate": "",
+      "fields": [
+        {
+          "suffix": "TUR",
+          "label": "{{N}}) Materyal Türü",
+          "type": "select",
+          "placeholder": "Seçim Yapın",
+          "values": [
+            { "label": "Tabanca", "value": "Tabanca" },
+            { "label": "Yarı Otomatik Tüfek", "value": "Yarı Otomatik Tüfek" },
+            { "label": "Pompalı Tüfek", "value": "Pompalı Tüfek" },
+            { "label": "Tam Otomatik Tüfek", "value": "Tam Otomatik Tüfek" },
+            { "label": "Kontrollü Madde", "value": "Kontrollü Madde" }
+          ]
+        },
+        {
+          "suffix": "ADI",
+          "label": "{{N}}) Materyal Adı",
+          "type": "text",
+          "placeholder": "Vom Feuer 19 / PCP"
+        },
+        {
+          "suffix": "MIKTAR",
+          "label": "{{N}}) Miktar",
+          "type": "text",
+          "placeholder": "1",
+          "hint": "Kontrollü madde için gram, diğerlerinde adet girin."
         }
       ]
     },
