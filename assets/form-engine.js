@@ -448,13 +448,17 @@
         ctrl = { get: function () { return input.value; }, set: function (v) { input.value = v || ''; }, focusEl: input, input: input };
     }
     if (f.hint) wrap.appendChild(el('p', { class: 'hint' }, esc(f.hint)));
-    if (f.showWhen) conditionals.push({ wrap: wrap, key: f.showWhen.key, equals: f.showWhen.equals });
+    // f.showWhen may be a single {key, equals} or an array of them (all must match — AND).
+    if (f.showWhen) conditionals.push({ wrap: wrap, conds: Array.isArray(f.showWhen) ? f.showWhen : [f.showWhen] });
     return { wrap: wrap, ctrl: ctrl };
   }
   function updateConditionals() {
     conditionals.forEach(function (c) {
-      var ctrl = controls[c.key];
-      c.wrap.hidden = !(ctrl && ctrl.get() === c.equals);
+      var show = c.conds.every(function (cond) {
+        var ctrl = controls[cond.key];
+        return ctrl && ctrl.get() === cond.equals;
+      });
+      c.wrap.hidden = !show;
     });
   }
 
@@ -944,6 +948,7 @@
       vals[g.def.target] = blocks.join(g.def.joinWith != null ? g.def.joinWith : '\n\n');
       rawKeys[g.def.target] = true;
     });
+    if (typeof def.beforeFill === 'function') def.beforeFill(vals);
     output = fill(def.template, vals, htmlMode, rawKeys);
     lastVals = vals;
     if (titleInput) titleInput.value = fill(def.titleTemplate || '', vals, false);
