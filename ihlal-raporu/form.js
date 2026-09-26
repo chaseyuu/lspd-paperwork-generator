@@ -403,14 +403,15 @@ window.REPORT_FORM = {
     return raw.split('/').map(function (part) { return titleCase(part); }).filter(Boolean).join(' ile ');
   }
 
-  // "401,410" -> "401. ... (M) ve 410. ... (I)"
+  // "401,410" -> "401. ... (M) ve 410. ... (I)" — harfli alt bentli maddeler (406a gibi)
+  // window.formatPenalCodeLabel üzerinden "406. Kayıtsız Taşıt (I - A)" olarak yazılır.
   function chargeList(ids) {
-    var code = window.PENAL_CODE || [], seen = [], parts = [];
+    var seen = [], parts = [];
     ids.forEach(function (id) {
       if (!id || seen.indexOf(id) >= 0) return;
       seen.push(id);
-      var c = code.filter(function (x) { return x.id === id; })[0];
-      if (c) parts.push(c.id + '. ' + c.charge + ' (' + c.type + ')');
+      var label = window.formatPenalCodeLabel && window.formatPenalCodeLabel(id);
+      if (label) parts.push(label);
     });
     if (parts.length < 2) return parts.join('');
     return parts.slice(0, -1).join(', ') + ' ve ' + parts[parts.length - 1];

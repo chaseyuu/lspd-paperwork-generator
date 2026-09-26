@@ -211,7 +211,9 @@
       var order = [];
       var counts = {};
       rows.forEach(function (r) {
-        var n = r.select.get().replace(/[^0-9]/g, '');
+        // The article id as chosen, e.g. "112a" — some articles share a number across lettered
+        // subsections (112a/112b/112c), so this must NOT strip letters down to a bare number.
+        var n = (r.select.get() || '').trim();
         if (!n) return;
         if (!(n in counts)) { counts[n] = 0; order.push(n); }
         counts[n]++;

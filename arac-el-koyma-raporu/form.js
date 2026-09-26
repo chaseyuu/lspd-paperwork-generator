@@ -392,13 +392,15 @@ window.REPORT_FORM = {
   }
 
   // "115,401,410" -> "115. Kolluk Kuvvetlerinden Kaçmak (F), 401. ... (M) ve 410. Hız İhlali (I)"
+  // — harfli alt bentli maddeler (406a gibi) window.formatPenalCodeLabel üzerinden
+  // "406. Kayıtsız Taşıt (I - A)" olarak yazılır.
   function chargeList(ids) {
-    var code = window.PENAL_CODE || [], seen = [], parts = [];
+    var seen = [], parts = [];
     String(ids || '').split(',').forEach(function (id) {
       if (!id || seen.indexOf(id) >= 0) return;
       seen.push(id);
-      var c = code.filter(function (x) { return x.id === id; })[0];
-      if (c) parts.push(c.id + '. ' + c.charge + ' (' + c.type + ')');
+      var label = window.formatPenalCodeLabel && window.formatPenalCodeLabel(id);
+      if (label) parts.push(label);
     });
     if (parts.length < 2) return parts.join('');
     return parts.slice(0, -1).join(', ') + ' ve ' + parts[parts.length - 1];

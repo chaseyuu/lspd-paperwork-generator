@@ -66,14 +66,12 @@ function tutuklamaMaterialLine(v) {
    yazar; aynı madde birden fazla kez işlendiyse (xN) sayısını Türkçe yazıyla ekler, tek seferse
    düz "suçlama" der. Bulunamayan bir id olduğu gibi bırakılır. */
 function tutuklamaChargeClauses(rawList) {
-  var code = window.PENAL_CODE || [];
   var entries = String(rawList || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
   return entries.map(function (entry) {
     var m = /^(.*?)(?:\s*\(x(\d+)\))?$/.exec(entry);
     var id = (m ? m[1] : entry).trim();
     var count = m && m[2] ? parseInt(m[2], 10) : 1;
-    var found = code.filter(function (c) { return c.id === id; })[0];
-    var label = found ? (found.id + '. ' + found.charge + ' (' + found.type + ')') : id;
+    var label = (window.formatPenalCodeLabel && window.formatPenalCodeLabel(id)) || id;
     var sayi = count > 1 ? tutuklamaSayiOku(count) : null;
     return label + ' maddesine yönelik ' + (sayi ? sayi + ' ayrı suçlama' : 'suçlama');
   });

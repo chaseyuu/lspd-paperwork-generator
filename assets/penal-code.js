@@ -966,3 +966,18 @@ window.PENAL_CODE = [
   "type": "F"
  }
 ];
+
+/* Bir madde id'sini rapor metinlerinde kullanılan "id. Başlık (Tür)" haline çevirir. Aynı madde
+   numarası altında harfli alt bentleri olan maddelerde (112a/112b/112c gibi — başlıkları zaten
+   "Kamu Görevini Engellemek (a)" şeklinde harfi taşıyor), harf numaradan ayrılıp türün yanına
+   "(F - A)" olarak taşınır ve başlıktaki "(a)" tekrarı silinir: "112. Kamu Görevini Engellemek
+   (F - A)". Harfsiz maddelerde eskisi gibi "id. Başlık (Tür)" döner. Bulunamayan id için null. */
+window.formatPenalCodeLabel = function (id) {
+  var entry = (window.PENAL_CODE || []).filter(function (c) { return c.id === id; })[0];
+  if (!entry) return null;
+  var m = /^(\d+)([a-zA-Z]+)$/.exec(entry.id);
+  if (!m) return entry.id + '. ' + entry.charge + ' (' + entry.type + ')';
+  var letter = m[2].toUpperCase();
+  var baseCharge = entry.charge.replace(new RegExp('\\s*\\(' + m[2] + '\\)\\s*$', 'i'), '');
+  return m[1] + '. ' + baseCharge + ' (' + entry.type + ' - ' + letter + ')';
+};
