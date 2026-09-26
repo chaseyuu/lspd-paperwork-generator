@@ -1,4 +1,46 @@
 /* Tutuklama Raporu: alanlar ve çıktı şablonu (HTML — forumun orijinal Tutuklama Raporu şablonu). */
+
+/* "15:29" -> "1529'da" — ek, saatin dört haneli halinin SON RAKAMINA göre seçilir
+   (Türkçe sayı okunuşu değil, sabit bir tablo: bkz. kullanıcı talimatı). */
+var TUTUKLAMA_BOOKING_SUFFIX = ["da", "de", "de", "te", "te", "te", "da", "de", "de", "da"];
+function tutuklamaBookingTime(t) {
+  var m = /^(\d{2}):(\d{2})$/.exec(t || '');
+  if (!m) return '';
+  var digits = m[1] + m[2];
+  return digits + "'" + TUTUKLAMA_BOOKING_SUFFIX[Number(digits.charAt(digits.length - 1))];
+}
+function tutuklamaCap(s) {
+  return String(s || '').trim().toLocaleLowerCase('en-US').replace(/(^|[\s\-'])(\S)/g, function (m, sep, ch) { return sep + ch.toLocaleUpperCase('en-US'); });
+}
+function tutuklamaLastName(full) {
+  var parts = String(full || '').trim().split(/\s+/).filter(Boolean);
+  return parts.length ? tutuklamaCap(parts[parts.length - 1]) : '';
+}
+function tutuklamaBookingLine(v) {
+  function p(val, label) { return val ? val : '{' + label + '}'; }
+  if (v.KAYIT_ISLEMLERI !== 'Evet') return 'Kayıt İşlemleri: ' + (v.KAYIT_ISLEMLERI || 'Hayır');
+
+  var saat = p(tutuklamaBookingTime(v.BOOKING_SAAT), 'Booking Saati');
+  var supheli = p(tutuklamaCap(v.AD_SOYADI_2911L1G), 'Şüpheli Adı Soyadı');
+  var kanunlar = p(v.CEZA_KANUNU_97NVWS && v.CEZA_KANUNU_97NVWS !== '—' ? v.CEZA_KANUNU_97NVWS : '', 'Kanunlar');
+  var kendimYaptim = v.BOOKING_KENDIM_YAPTIM === 'Evet';
+  var ikinciPersonel = String(v.PERSONEL_BILGISI_151KSJP1 || '').trim();
+  var hasSecondOfficer = ikinciPersonel && ikinciPersonel !== '—';
+
+  if (!kendimYaptim) {
+    var rutbe = p(v.BOOKING_MEMUR_RUTBE, 'Rütbe');
+    var soyad = p(tutuklamaLastName(v.BOOKING_MEMUR_ADSOYAD), 'Booking Yapan Memur Soyadı');
+    return saat + ' ' + supheli + ' için kayıt işlemleri, Mission Row Community Police Station\'da ' + rutbe + ' ' + soyad + ' tarafından tamamlandı. ' +
+      supheli + ' için San Andreas Ceza Kanunu\'nun ' + kanunlar + ' maddelerine yönelik suçlama gerçekleştirdik ve sevk edilmesini sağlattık.';
+  }
+  if (hasSecondOfficer) {
+    return saat + ' ' + supheli + ' için kayıt işlemlerini, Mission Row Community Police Station\'da tamamladım. ' +
+      supheli + ' için San Andreas Ceza Kanunu\'nun ' + kanunlar + ' maddelerine yönelik suçlama gerçekleştirdik ve sevk edilmesini sağlattık.';
+  }
+  return saat + ' ' + supheli + ' için kayıt işlemlerini, Mission Row Community Police Station\'da tamamladım. ' +
+    supheli + ' için San Andreas Ceza Kanunu\'nun ' + kanunlar + ' maddelerine yönelik suçlama gerçekleştirdim ve sevk edilmesini sağlattım.';
+}
+
 window.REPORT_FORM = {
   "emptyValue": "—",
   "title": "Tutuklama Raporu",
@@ -15,8 +57,11 @@ window.REPORT_FORM = {
   "autoText": {
     "target": "ISLEMLER_ONIZLEME",
     "build": function (v) {
-      return 'Kayıt İşlemleri: ' + (v.KAYIT_ISLEMLERI || 'Hayır') + '\nKanıt Teslim Etme: ' + (v.KANIT_TESLIM || 'Hayır');
+      return tutuklamaBookingLine(v) + '\nKanıt Teslim Etme: ' + (v.KANIT_TESLIM || 'Hayır');
     }
+  },
+  "beforeFill": function (v) {
+    v.KAYIT_ISLEMLERI_METIN = tutuklamaBookingLine(v);
   },
   "sections": [
     {
@@ -254,6 +299,57 @@ window.REPORT_FORM = {
           "type": "toggle"
         },
         {
+          "key": "BOOKING_SAAT",
+          "label": "Booking Saati",
+          "type": "time",
+          "showWhen": { "key": "KAYIT_ISLEMLERI", "equals": "Evet" }
+        },
+        {
+          "key": "BOOKING_KENDIM_YAPTIM",
+          "label": "Kendim Yaptım",
+          "type": "toggle",
+          "showWhen": { "key": "KAYIT_ISLEMLERI", "equals": "Evet" }
+        },
+        {
+          "key": "BOOKING_MEMUR_ADSOYAD",
+          "label": "Booking Yapan Memur Adı Soyadı",
+          "type": "text",
+          "placeholder": "JOHN DOE",
+          "upper": "en",
+          "showWhen": [
+            { "key": "KAYIT_ISLEMLERI", "equals": "Evet" },
+            { "key": "BOOKING_KENDIM_YAPTIM", "equals": "Hayır" }
+          ]
+        },
+        {
+          "key": "BOOKING_MEMUR_SERI_NO",
+          "label": "Booking Yapan Memur Seri No.",
+          "type": "text",
+          "placeholder": "00000",
+          "hint": "İleride Sworn Roster'dan otomatik çekilecek; şimdilik elle girin.",
+          "showWhen": [
+            { "key": "KAYIT_ISLEMLERI", "equals": "Evet" },
+            { "key": "BOOKING_KENDIM_YAPTIM", "equals": "Hayır" }
+          ]
+        },
+        {
+          "key": "BOOKING_MEMUR_RUTBE",
+          "label": "Booking Yapan Memur Rütbe",
+          "type": "select",
+          "placeholder": "Seçim Yapın",
+          "values": [
+            { "label": "Officer", "value": "Officer" },
+            { "label": "Detective", "value": "Detective" },
+            { "label": "Sergeant", "value": "Sergeant" },
+            { "label": "Lieutenant", "value": "Lieutenant" },
+            { "label": "Captain", "value": "Captain" }
+          ],
+          "showWhen": [
+            { "key": "KAYIT_ISLEMLERI", "equals": "Evet" },
+            { "key": "BOOKING_KENDIM_YAPTIM", "equals": "Hayır" }
+          ]
+        },
+        {
           "key": "KANIT_TESLIM",
           "label": "Kanıt Teslim Etme",
           "type": "toggle"
@@ -262,10 +358,10 @@ window.REPORT_FORM = {
           "key": "ISLEMLER_ONIZLEME",
           "label": "Önizleme",
           "type": "textarea",
-          "rows": 2,
+          "rows": 4,
           "span": "all",
           "locked": true,
-          "hint": "Bu iki satır rapor çıktısının en altına otomatik eklenir."
+          "hint": "Bu metin rapor çıktısının en altına otomatik eklenir."
         }
       ]
     },
@@ -370,5 +466,5 @@ window.REPORT_FORM = {
         '\n**Arrest Report Linki:** ' + link;
     }
   },
-  "template": "<head>\n    <style>\n     table {\n    border-collapse: collapse;\n    width: 100%;\n    table-layout: fixed; /* Ensures consistent layout */\n}\n\ntd {\n    padding: 5px;\n    white-space: normal; /* Allows wrapping to avoid overflow */\n    word-wrap: break-word; /* Forces long words to break */\n    text-align: left;\n}\n\ntd div {\n    padding-left: 5px;\n}\n\n/* Specific column width control */\ntd[style*=\"width:2%\"] { min-width: 15%; max-width: 20%; }\ntd[style*=\"width:1%\"] { min-width: 10%; max-width: 15%; }\ntd[style*=\"width:3%\"] { min-width: 20%; max-width: 25%; }\ntd[style*=\"width:4%\"] { min-width: 25%; max-width: 30%; }\n\n    </style>\n</head>\n\n\n<div class=\"content\"><div style=\"background-color:white;border:1px solid black;width: 800px; margin: auto;padding:25px\">\n<span style=\"color:#000000\">\n<table border=\"1\"><tbody><tr>\n<td style=\"border:1px solid #ffffff;background:#ffffff;vertical-align:top;text-align:left;width:15%;padding:10px\">\n<div style=\"text-align:left\"><span style=\"color:#000000\">LOS SANTOS POLICE DEPARTMENT<br>\nCITY OF LOS SANTOS<br>\n<strong><span style=\"font-size:130%;line-height:116%\">TUTUKLAMA RAPORU</span></strong><br>\nFORM 05.02.00</span></div>\n</td></tr></tbody></table>\n\n<br>\n<br>\n<br>\n<br>\n\n<table border=\"1\"><tbody><tr>\n<td style=\"border:1px solid #ffffff;background:#ffffff;vertical-align:top;text-align:left;width:2%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\"><strong>ŞÜPHELİ BİLGİSİ</strong></span></div>\n<table border=\"1\"><tbody><tr>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:2%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">ADI SOYADI<br>\n{AD_SOYADI_2911L1G}</span></div></td>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:1%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">CİNSİYETİ<br>\n{CNSYET_306FE08}</span></div></td>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:1%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">YAŞ<br>\n{YA_13T170}</span></div></td>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:1%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">KÖKEN<br>\n{KKEN_394JO84}</span></div></td></tr></tbody></table></td></tr></tbody></table>\n\n\n<table border=\"1\"><tbody><tr>\n<td style=\"border:1px solid #ffffff;background:#ffffff;vertical-align:top;text-align:left;width:2%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\"><strong>TUTUKLAMA BİLGİSİ</strong></span></div>\n<table border=\"1\"><tbody><tr>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:2%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">KONUM<br>\n{KONUM_53B0BK}</span></div></td>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:1%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">CEZA KANUNU<br>\n{CEZA_KANUNU_97NVWS}</span></div></td>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:1%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">TARİH<br>\n{TARH_108BV3Y}</span></div></td>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:1%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">SAAT<br>\n{SAAT_104SXC0}</span></div></td>\n</tr></tbody></table></td></tr></tbody></table>\n\n<table border=\"1\"><tbody><tr>\n<td style=\"border:1px solid #ffffff;background:#ffffff;vertical-align:top;text-align:left;width:2%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\"><strong>PERSONEL BİLGİSİ</strong></span></div>\n<table border=\"1\"><tbody><tr>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:3%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">ADI SOYADI<br>\n{PERSONEL_BILGISI_151KSJP}</span></div></td>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:1%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">SERİ NO.<br>\n{SERI_NO_159LJQF}</span></div></td>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:1%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">DIVISION<br>\n{DIVISION_12Z4CJ}</span></div></td>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:2%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">GÖREVLENDİRME<br>\n{GREVLENDIRME_177LU8}</span></div></td>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:1%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">TARİH<br>\n{TARIH_RAPOR}</span></div></td></tr></tbody></table>\n<table border=\"1\"><tbody><tr>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:3%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">ADI SOYADI<br>\n{PERSONEL_BILGISI_151KSJP1}</span></div></td>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:1%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">SERİ NO.<br>\n{SERI_NO_159LJQF1}</span></div></td>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:1%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">DIVISION<br>\n{DIVISION_21NN6U}</span></div></td>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:2%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">GÖREVLENDİRME<br>\n{GREVLENDIRME_36Y25T}</span></div></td>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:1%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">TARİH<br>\n{TARIH_RAPOR}</span></div></td></tr></tbody></table></td></tr></tbody></table>\n\n<table border=\"1\"><tbody><tr>\n<td style=\"border:1px solid #ffffff;background:#ffffff;vertical-align:top;text-align:left;width:2%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\"><strong><span style=\"color:#000000\">AÇIKLAMA</span></strong></span></div>\n<table border=\"1\"><tbody><tr>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:4%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\"><span style=\"color:#000000\">TANIM<br>\n{AIKLAMA_5CY4S}<br>\n<br>\n<br>\n</span></span></div></td></tr></tbody></table>\n<table border=\"1\"><tbody><tr>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:4%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\"><span style=\"color:#000000\">KANITLAR</span></span>\n<ul>\n{KANIT_LISTESI}\n</ul>\n</div></td>\n</tr></tbody></table>\n</td></tr></tbody></table>\n\n<p>Kayıt İşlemleri: {KAYIT_ISLEMLERI}</p>\n<p>Kanıt Teslim Etme: {KANIT_TESLIM}</p>\n</span></div></div>\n"
+  "template": "<head>\n    <style>\n     table {\n    border-collapse: collapse;\n    width: 100%;\n    table-layout: fixed; /* Ensures consistent layout */\n}\n\ntd {\n    padding: 5px;\n    white-space: normal; /* Allows wrapping to avoid overflow */\n    word-wrap: break-word; /* Forces long words to break */\n    text-align: left;\n}\n\ntd div {\n    padding-left: 5px;\n}\n\n/* Specific column width control */\ntd[style*=\"width:2%\"] { min-width: 15%; max-width: 20%; }\ntd[style*=\"width:1%\"] { min-width: 10%; max-width: 15%; }\ntd[style*=\"width:3%\"] { min-width: 20%; max-width: 25%; }\ntd[style*=\"width:4%\"] { min-width: 25%; max-width: 30%; }\n\n    </style>\n</head>\n\n\n<div class=\"content\"><div style=\"background-color:white;border:1px solid black;width: 800px; margin: auto;padding:25px\">\n<span style=\"color:#000000\">\n<table border=\"1\"><tbody><tr>\n<td style=\"border:1px solid #ffffff;background:#ffffff;vertical-align:top;text-align:left;width:15%;padding:10px\">\n<div style=\"text-align:left\"><span style=\"color:#000000\">LOS SANTOS POLICE DEPARTMENT<br>\nCITY OF LOS SANTOS<br>\n<strong><span style=\"font-size:130%;line-height:116%\">TUTUKLAMA RAPORU</span></strong><br>\nFORM 05.02.00</span></div>\n</td></tr></tbody></table>\n\n<br>\n<br>\n<br>\n<br>\n\n<table border=\"1\"><tbody><tr>\n<td style=\"border:1px solid #ffffff;background:#ffffff;vertical-align:top;text-align:left;width:2%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\"><strong>ŞÜPHELİ BİLGİSİ</strong></span></div>\n<table border=\"1\"><tbody><tr>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:2%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">ADI SOYADI<br>\n{AD_SOYADI_2911L1G}</span></div></td>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:1%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">CİNSİYETİ<br>\n{CNSYET_306FE08}</span></div></td>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:1%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">YAŞ<br>\n{YA_13T170}</span></div></td>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:1%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">KÖKEN<br>\n{KKEN_394JO84}</span></div></td></tr></tbody></table></td></tr></tbody></table>\n\n\n<table border=\"1\"><tbody><tr>\n<td style=\"border:1px solid #ffffff;background:#ffffff;vertical-align:top;text-align:left;width:2%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\"><strong>TUTUKLAMA BİLGİSİ</strong></span></div>\n<table border=\"1\"><tbody><tr>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:2%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">KONUM<br>\n{KONUM_53B0BK}</span></div></td>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:1%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">CEZA KANUNU<br>\n{CEZA_KANUNU_97NVWS}</span></div></td>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:1%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">TARİH<br>\n{TARH_108BV3Y}</span></div></td>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:1%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">SAAT<br>\n{SAAT_104SXC0}</span></div></td>\n</tr></tbody></table></td></tr></tbody></table>\n\n<table border=\"1\"><tbody><tr>\n<td style=\"border:1px solid #ffffff;background:#ffffff;vertical-align:top;text-align:left;width:2%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\"><strong>PERSONEL BİLGİSİ</strong></span></div>\n<table border=\"1\"><tbody><tr>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:3%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">ADI SOYADI<br>\n{PERSONEL_BILGISI_151KSJP}</span></div></td>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:1%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">SERİ NO.<br>\n{SERI_NO_159LJQF}</span></div></td>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:1%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">DIVISION<br>\n{DIVISION_12Z4CJ}</span></div></td>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:2%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">GÖREVLENDİRME<br>\n{GREVLENDIRME_177LU8}</span></div></td>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:1%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">TARİH<br>\n{TARIH_RAPOR}</span></div></td></tr></tbody></table>\n<table border=\"1\"><tbody><tr>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:3%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">ADI SOYADI<br>\n{PERSONEL_BILGISI_151KSJP1}</span></div></td>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:1%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">SERİ NO.<br>\n{SERI_NO_159LJQF1}</span></div></td>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:1%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">DIVISION<br>\n{DIVISION_21NN6U}</span></div></td>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:2%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">GÖREVLENDİRME<br>\n{GREVLENDIRME_36Y25T}</span></div></td>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:1%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\">TARİH<br>\n{TARIH_RAPOR}</span></div></td></tr></tbody></table></td></tr></tbody></table>\n\n<table border=\"1\"><tbody><tr>\n<td style=\"border:1px solid #ffffff;background:#ffffff;vertical-align:top;text-align:left;width:2%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\"><strong><span style=\"color:#000000\">AÇIKLAMA</span></strong></span></div>\n<table border=\"1\"><tbody><tr>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:4%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\"><span style=\"color:#000000\">TANIM<br>\n{AIKLAMA_5CY4S}<br>\n<br>\n<br>\n</span></span></div></td></tr></tbody></table>\n<table border=\"1\"><tbody><tr>\n<td style=\"border:1px solid #d0dade;background:#ffffff;vertical-align:top;text-align:left;width:4%;padding:1px\"><span style=\"font-size:85%;line-height:116%\"></span><div style=\"padding-left:2px\"><span style=\"font-size:85%;line-height:116%\"><span style=\"color:#000000\">KANITLAR</span></span>\n<ul>\n{KANIT_LISTESI}\n</ul>\n</div></td>\n</tr></tbody></table>\n</td></tr></tbody></table>\n\n<p>{KAYIT_ISLEMLERI_METIN}</p>\n<p>Kanıt Teslim Etme: {KANIT_TESLIM}</p>\n</span></div></div>\n"
 };
