@@ -446,6 +446,19 @@
           wrap.appendChild(input);
         }
         ctrl = { get: function () { return input.value; }, set: function (v) { input.value = v || ''; }, focusEl: input, input: input };
+        if (f.lookupTarget && typeof f.lookup === 'function') {
+          // On leaving the field (not on every keystroke), look up its value (e.g. a name against
+          // a roster) and fill another field with the result — same "don't clobber a hand-typed
+          // value" convention as fillTarget/prefill (dataset.autofill).
+          input.addEventListener('blur', function () {
+            var target = controls[f.lookupTarget];
+            if (!target || !target.input) return;
+            if (target.input.value && !target.input.dataset.autofill) return;
+            var result = f.lookup(input.value);
+            target.set(result || '');
+            if (result) target.input.dataset.autofill = '1'; else delete target.input.dataset.autofill;
+          });
+        }
     }
     if (f.hint) wrap.appendChild(el('p', { class: 'hint' }, esc(f.hint)));
     // f.showWhen may be a single {key, equals} or an array of them (all must match — AND).
