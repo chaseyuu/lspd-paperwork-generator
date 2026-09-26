@@ -76,9 +76,7 @@ function tutuklamaMaterialLine(v) {
 }
 function tutuklamaBookingLine(v) {
   function p(val, label) { return val ? val : '{' + label + '}'; }
-  var kanit = v.KANIT_TESLIM === 'Evet'
-    ? '\n' + tutuklamaMaterialLine(v)
-    : '\nKanıt Teslim Etme: ' + (v.KANIT_TESLIM || 'Hayır');
+  var kanit = v.KANIT_TESLIM === 'Evet' ? '\n' + tutuklamaMaterialLine(v) : '';
   if (v.KAYIT_ISLEMLERI !== 'Evet') return 'Kayıt İşlemleri: ' + (v.KAYIT_ISLEMLERI || 'Hayır') + kanit;
 
   var saat = p(tutuklamaBookingTime(v.BOOKING_SAAT), 'Booking Saati');
