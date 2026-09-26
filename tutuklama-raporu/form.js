@@ -16,13 +16,28 @@ function tutuklamaLastName(full) {
   var parts = String(full || '').trim().split(/\s+/).filter(Boolean);
   return parts.length ? tutuklamaCap(parts[parts.length - 1]) : '';
 }
+/* "115, 116 (x2), 701" -> { text: "115. Kolluk Kuvvetlerinden Kaçmak (F), 116. Tutuklamaya
+   Direnmek (M), 701. İzinsiz Ateşli Silah Bulundurmak (M)", count: 3 } — madde numarasını,
+   başlığını ve türünü (F/M) window.PENAL_CODE'dan bulup yazar; (xN) tekrar sayısı yok sayılır
+   (her madde tek kez listelenir). Bulunamayan bir id olduğu gibi bırakılır. */
+function tutuklamaChargesText(rawList) {
+  var code = window.PENAL_CODE || [];
+  var ids = String(rawList || '').split(',').map(function (s) { return s.replace(/\s*\(x\d+\)\s*$/, '').trim(); }).filter(Boolean);
+  var parts = ids.map(function (id) {
+    var entry = code.filter(function (c) { return c.id === id; })[0];
+    return entry ? (entry.id + '. ' + entry.charge + ' (' + entry.type + ')') : id;
+  });
+  return { text: parts.join(', '), count: parts.length };
+}
 function tutuklamaBookingLine(v) {
   function p(val, label) { return val ? val : '{' + label + '}'; }
   if (v.KAYIT_ISLEMLERI !== 'Evet') return 'Kayıt İşlemleri: ' + (v.KAYIT_ISLEMLERI || 'Hayır');
 
   var saat = p(tutuklamaBookingTime(v.BOOKING_SAAT), 'Booking Saati');
   var supheli = p(tutuklamaCap(v.AD_SOYADI_2911L1G), 'Şüpheli Adı Soyadı');
-  var kanunlar = p(v.CEZA_KANUNU_97NVWS && v.CEZA_KANUNU_97NVWS !== '—' ? v.CEZA_KANUNU_97NVWS : '', 'Kanunlar');
+  var chargesInfo = tutuklamaChargesText(v.CEZA_KANUNU_97NVWS && v.CEZA_KANUNU_97NVWS !== '—' ? v.CEZA_KANUNU_97NVWS : '');
+  var kanunlar = p(chargesInfo.text, 'Kanunlar');
+  var madde = chargesInfo.count > 1 ? 'maddelerine' : 'maddesine';
   var kendimYaptim = v.BOOKING_KENDIM_YAPTIM === 'Evet';
   var ikinciPersonel = String(v.PERSONEL_BILGISI_151KSJP1 || '').trim();
   var hasSecondOfficer = ikinciPersonel && ikinciPersonel !== '—';
@@ -31,14 +46,33 @@ function tutuklamaBookingLine(v) {
     var rutbe = p(v.BOOKING_MEMUR_RUTBE, 'Rütbe');
     var soyad = p(tutuklamaLastName(v.BOOKING_MEMUR_ADSOYAD), 'Booking Yapan Memur Soyadı');
     return saat + ' ' + supheli + ' için kayıt işlemleri, Mission Row Community Police Station\'da ' + rutbe + ' ' + soyad + ' tarafından tamamlandı. ' +
-      supheli + ' için San Andreas Ceza Kanunu\'nun ' + kanunlar + ' maddelerine yönelik suçlama gerçekleştirdik ve sevk edilmesini sağlattık.';
+      supheli + ' için San Andreas Ceza Kanunu\'nun ' + kanunlar + ' ' + madde + ' yönelik suçlama gerçekleştirdik ve sevk edilmesini sağlattık.';
   }
   if (hasSecondOfficer) {
     return saat + ' ' + supheli + ' için kayıt işlemlerini, Mission Row Community Police Station\'da tamamladım. ' +
-      supheli + ' için San Andreas Ceza Kanunu\'nun ' + kanunlar + ' maddelerine yönelik suçlama gerçekleştirdik ve sevk edilmesini sağlattık.';
+      supheli + ' için San Andreas Ceza Kanunu\'nun ' + kanunlar + ' ' + madde + ' yönelik suçlama gerçekleştirdik ve sevk edilmesini sağlattık.';
   }
   return saat + ' ' + supheli + ' için kayıt işlemlerini, Mission Row Community Police Station\'da tamamladım. ' +
-    supheli + ' için San Andreas Ceza Kanunu\'nun ' + kanunlar + ' maddelerine yönelik suçlama gerçekleştirdim ve sevk edilmesini sağlattım.';
+    supheli + ' için San Andreas Ceza Kanunu\'nun ' + kanunlar + ' ' + madde + ' yönelik suçlama gerçekleştirdim ve sevk edilmesini sağlattım.';
+}
+
+/* "JOHN CLARK" -> Sworn Roster'da "CLARK, JOHN" satırını arar, bulursa seri no.'yu döndürür.
+   Roster window.SWORN_ROSTER (lspd-tools/assets/sworn-roster.js) üzerinden gelir; sayfa onu
+   yüklemediyse ya da eşleşme yoksa null döner (alan boş/elle girilmiş halinde kalır). */
+function tutuklamaSeriLookup(fullName) {
+  var roster = window.SWORN_ROSTER || [];
+  var parts = String(fullName || '').trim().split(/\s+/).filter(Boolean);
+  if (parts.length < 2) return null;
+  var ad = parts.shift().toLocaleUpperCase('en-US');
+  var soyad = parts.join(' ').toLocaleUpperCase('en-US');
+  for (var i = 0; i < roster.length; i++) {
+    var comma = roster[i].name.indexOf(',');
+    if (comma < 0) continue;
+    var rSoyad = roster[i].name.slice(0, comma).trim().toLocaleUpperCase('en-US');
+    var rAd = roster[i].name.slice(comma + 1).trim().toLocaleUpperCase('en-US');
+    if (rSoyad === soyad && rAd === ad) return roster[i].seri;
+  }
+  return null;
 }
 
 /* "JOHN CLARK" -> Sworn Roster'da "CLARK, JOHN" satırını arar, bulursa seri no.'yu döndürür.
@@ -308,27 +342,40 @@ window.REPORT_FORM = {
           "span": "all",
           "hideLabel": true,
           "hint": "Tutuklamaya götüren olayları, kullanılan gücü ve şüphelinin müdahaleye uyumunu kronolojik olarak anlatın."
+        },
+        {
+          "key": "ISLEMLER_ONIZLEME",
+          "label": "Kayıt & Kanıt İşlemleri Önizleme",
+          "type": "textarea",
+          "rows": 4,
+          "span": "all",
+          "locked": true,
+          "hint": "Bu metin rapor çıktısının en altına otomatik eklenir; aşağıdaki Kayıt & Kanıt İşlemleri kutusundan canlı güncellenir."
         }
       ]
     },
     {
       "title": "Kayıt & Kanıt İşlemleri",
+      "dualColumn": true,
       "fields": [
         {
           "key": "KAYIT_ISLEMLERI",
           "label": "Kayıt İşlemleri",
-          "type": "toggle"
+          "type": "toggle",
+          "side": "left"
         },
         {
           "key": "BOOKING_SAAT",
           "label": "Booking Saati",
           "type": "time",
+          "side": "left",
           "showWhen": { "key": "KAYIT_ISLEMLERI", "equals": "Evet" }
         },
         {
           "key": "BOOKING_KENDIM_YAPTIM",
           "label": "Kendim Yaptım",
           "type": "toggle",
+          "side": "left",
           "showWhen": { "key": "KAYIT_ISLEMLERI", "equals": "Evet" }
         },
         {
@@ -337,6 +384,7 @@ window.REPORT_FORM = {
           "type": "text",
           "placeholder": "JOHN DOE",
           "upper": "en",
+          "side": "left",
           "lookupTarget": "BOOKING_MEMUR_SERI_NO",
           "lookup": tutuklamaSeriLookup,
           "showWhen": [
@@ -349,6 +397,7 @@ window.REPORT_FORM = {
           "label": "Booking Yapan Memur Seri No.",
           "type": "text",
           "placeholder": "00000",
+          "side": "left",
           "hint": "Adı Soyadı Sworn Roster'da bulunursa otomatik doldurulur.",
           "showWhen": [
             { "key": "KAYIT_ISLEMLERI", "equals": "Evet" },
@@ -360,6 +409,7 @@ window.REPORT_FORM = {
           "label": "Booking Yapan Memur Rütbe",
           "type": "select",
           "placeholder": "Seçim Yapın",
+          "side": "left",
           "values": [
             { "label": "Officer", "value": "Officer" },
             { "label": "Detective", "value": "Detective" },
@@ -375,16 +425,8 @@ window.REPORT_FORM = {
         {
           "key": "KANIT_TESLIM",
           "label": "Kanıt Teslim Etme",
-          "type": "toggle"
-        },
-        {
-          "key": "ISLEMLER_ONIZLEME",
-          "label": "Önizleme",
-          "type": "textarea",
-          "rows": 4,
-          "span": "all",
-          "locked": true,
-          "hint": "Bu metin rapor çıktısının en altına otomatik eklenir."
+          "type": "toggle",
+          "side": "right"
         }
       ]
     },

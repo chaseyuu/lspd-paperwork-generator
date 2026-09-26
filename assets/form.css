@@ -36,7 +36,7 @@
 /* Evet/Hayır switch (e.g. Inmate Check). */
 .toggle-switch {
   display: inline-flex; align-items: center; gap: 8px;
-  width: 148px; height: 40px; padding: 4px;
+  width: 118px; height: 40px; padding: 4px;
   border: none; border-radius: 999px; cursor: pointer;
   background: var(--destructive);
   transition: background .15s ease;
@@ -50,6 +50,10 @@
 .toggle-switch.on .toggle-knob { color: var(--success); }
 .toggle-knob svg { width: 16px; height: 16px; }
 .toggle-text { flex: 1; text-align: center; color: #fff; font-weight: 600; font-size: .875rem; }
+
+/* section.dualColumn: two independently-stacked columns (see form-engine.js). */
+.dual-column-wrap { display: flex; gap: 24px; margin-top: 16px; }
+.dual-column-wrap > .field-grid.dual-column { flex: 1; grid-template-columns: 1fr; margin-top: 0; }
 
 /* Panel with an external title: the h2 sits above the bordered box (not as its first line), and
    this block's own margin gives consistent, reasonable breathing room to the next boxed section —
@@ -216,4 +220,5 @@ textarea.code-box {
 
 @media (max-width: 900px) {
   .field-grid.cols-3 { grid-template-columns: 1fr; }
+  .dual-column-wrap { flex-direction: column; gap: 0; }
 }
