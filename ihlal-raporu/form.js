@@ -4,6 +4,15 @@ window.REPORT_FORM = {
   "title": "İhlal Raporu",
   "required": true,
   "draftMaxAgeMs": 3600000,
+  "sendUrl": function (v) {
+    function cap(s) {
+      return s.toLocaleLowerCase('en-US').replace(/(^|[\s\-'])(\S)/g, function (m, sep, ch) { return sep + ch.toLocaleUpperCase('en-US'); });
+    }
+    var name = String(v.AD_SOYADI_2911L1G || '').trim().split(/\s+/);
+    var ad = cap(name.shift() || '');
+    var soyad = cap(name.join(' '));
+    return 'https://mdc-tr.gta.world/record/' + encodeURIComponent(ad) + '_' + encodeURIComponent(soyad);
+  },
   "sections": [
     {
       "title": "İhlal Türü",

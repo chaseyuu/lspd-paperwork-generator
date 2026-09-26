@@ -793,7 +793,7 @@
   var resultView = document.getElementById('result-view');
   var titleInput = document.getElementById('result-title');
   var statusEl = document.getElementById('result-status');
-  var output = '', statusTimer;
+  var output = '', statusTimer, lastVals = null;
 
   function showStatus(text) {
     statusEl.textContent = text;
@@ -896,6 +896,7 @@
       rawKeys[g.def.target] = true;
     });
     output = fill(def.template, vals, htmlMode, rawKeys);
+    lastVals = vals;
     if (titleInput) titleInput.value = fill(def.titleTemplate || '', vals, false);
     var code = document.getElementById('result-code');
     if (code) code.value = output;
@@ -922,7 +923,8 @@
   var sendBtn = document.getElementById('send-btn');
   if (sendBtn) {
     sendBtn.addEventListener('click', function () {
-      window.open('https://chaseyuu.github.io', '_blank', 'noopener');
+      var url = typeof def.sendUrl === 'function' ? def.sendUrl(lastVals || {}) : (def.sendUrl || 'https://chaseyuu.github.io');
+      window.open(url, '_blank', 'noopener');
     });
   }
 
