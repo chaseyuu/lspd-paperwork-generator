@@ -919,5 +919,11 @@
   document.getElementById('copy-btn').addEventListener('click', function () {
     copy(output).then(function () { showStatus('Rapor kopyalandı.'); reportPendingCopy = false; });
   });
+  var sendBtn = document.getElementById('send-btn');
+  if (sendBtn) {
+    sendBtn.addEventListener('click', function () {
+      window.open('https://chaseyuu.github.io', '_blank', 'noopener');
+    });
+  }
 
 })();
